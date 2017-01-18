@@ -15,8 +15,6 @@
 
 - [Install](#install)
 - [Usage](#usage)
-- [Supported Hash Types](#supported-hash-types)
-- [Dependencies](#dependencies)
 - [Maintainers](#maintainers)
 - [Contribute](#contribute)
 - [License](#license)
@@ -51,6 +49,6 @@ Check out our [contributing document](https://github.com/multiformats/multiforma
 Small note: If editing the README, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 
 
-## Licensep
+## License
 
 [MIT](LICENSE) © 2017 Friedel Ziegelmayer

@@ -1,0 +1,14 @@
+[package]
+name = "multibase"
+version = "0.1.0"
+description = "multibase rust"
+homepage = "https://github.com/multiformats/rust-multibase"
+authors = ["Friedel Ziegelmayer <dignifiedquire@gmail.com>"]
+
+keywords = ["ipld", "ipfs", "hash", "multihash", "multibase", "cid"]
+
+license = "MIT"
+
+readme = "README.md"
+
+[dependencies]

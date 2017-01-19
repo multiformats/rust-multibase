@@ -4,8 +4,7 @@
 [![](https://img.shields.io/badge/project-multiformats-blue.svg?style=flat-square)](https://github.com/multiformats/multiformats)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](https://webchat.freenode.net/?channels=%23ipfs)
 [![Travis CI](https://img.shields.io/travis/multiformats/rust-multibase.svg?style=flat-square&branch=master)](https://travis-ci.org/multiformats/rust-multibase)
-[![codecov.io](https://img.shields.io/codecov/c/github/multiformats/rust-multibase.svg?style=flat-square&branch=master)](https://codecov.io/github/multiformats/rust-multibase?branch=master)
-[![](https://img.shields.io/badge/rust-docs-blue.svg?style=flat-square)](https://multiformats.github.io/rust-multibase/multibase/struct.Multibase.html)
+[![](https://img.shields.io/badge/rust-docs-blue.svg?style=flat-square)](https://multiformats.github.io/rust-multibase/multibase/index.html)
 [![crates.io](https://img.shields.io/badge/crates.io-v0.1.0-orange.svg?style=flat-square )](https://crates.io/crates/multibase)
 [![](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 

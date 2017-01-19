@@ -5,7 +5,7 @@
 extern crate base_x;
 
 /// Error types
-#[derive(Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum MultibaseError {
     UnsupportedBase,
     UnkownBase,
@@ -154,9 +154,22 @@ pub fn encode(base: Base, data: &str) -> MultibaseEncodeResult {
     match base.alphabet() {
         Ok(alphabet) => {
             let chars: Vec<i16> = data.encode_utf16()
-                .map((|u| u as i16))
-                .collect();
+                                      .map((|u| u as i16))
+                                      .collect();
             Ok(base.code().to_string() + &base_x::encode(alphabet, chars))
+        }
+        Err(why) => Err(why),
+    }
+}
+
+fn decode_with_base(base: Base, content: &str) -> MultibaseDecodeResult {
+    match base.alphabet() {
+        Ok(alphabet) => {
+            let res = base_x::decode(alphabet, content)
+                          .into_iter()
+                          .map(|u| String::from_utf16(&[u as u16]).unwrap())
+                          .collect::<String>();
+            Ok((base, res))
         }
         Err(why) => Err(why),
     }
@@ -164,22 +177,17 @@ pub fn encode(base: Base, data: &str) -> MultibaseEncodeResult {
 
 /// Decode the string.
 pub fn decode(data: &str) -> MultibaseDecodeResult {
-    let base_char = &data.chars().nth(0).unwrap().to_string();
-    println!("base {:}", base_char);
-    let base = Base::from_code(
-        base_char
-    ).unwrap();
+    let (base_char, content) = data.split_at(1);
 
-    let res: String = base_x::decode(base.alphabet().unwrap(), data)
-        .into_iter()
-        .map(|u| u.to_string())
-        .collect();
-    Ok((Base::Base1, res))
+    match Base::from_code(base_char) {
+        Ok(base) => decode_with_base(base, content),
+        Err(why) => Err(why),
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use ::{encode, decode};
+    use {encode, decode, MultibaseError};
     use Base;
 
     #[test]
@@ -207,23 +215,18 @@ mod tests {
         let id2 = "yes mani !";
 
         assert_eq!(encode(Base::Base2, &id2).unwrap(),
-                   "01111001011001010111001100100000011011010110000101101110011010010010000000100001");
+                   "01111001011001010111001100100000011011010110000101101110011010010010000000100\
+                    001");
         assert_eq!(encode(Base::Base8, &id2).unwrap(),
                    "7171312714403326055632220041");
         assert_eq!(encode(Base::Base10, &id2).unwrap(),
                    "9573277761329450583662625");
-        assert_eq!(encode(Base::Base16, &id2).unwrap(),
-                   "f796573206d616e692021");
-        assert_eq!(encode(Base::Base32hex, &id2).unwrap(),
-                   "vf5in683dc5n6i811");
-        assert_eq!(encode(Base::Base32, &id2).unwrap(),
-                   "bpfsxgidnmfxgsibb");
-        assert_eq!(encode(Base::Base32z, &id2).unwrap(),
-                   "hxf1zgedpcfzg1ebb");
-        assert_eq!(encode(Base::Base58flickr, &id2).unwrap(),
-                   "Z7Pznk19XTTzBtx");
-        assert_eq!(encode(Base::Base58btc, &id2).unwrap(),
-                   "z7paNL19xttacUY");
+        assert_eq!(encode(Base::Base16, &id2).unwrap(), "f796573206d616e692021");
+        assert_eq!(encode(Base::Base32hex, &id2).unwrap(), "vf5in683dc5n6i811");
+        assert_eq!(encode(Base::Base32, &id2).unwrap(), "bpfsxgidnmfxgsibb");
+        assert_eq!(encode(Base::Base32z, &id2).unwrap(), "hxf1zgedpcfzg1ebb");
+        assert_eq!(encode(Base::Base58flickr, &id2).unwrap(), "Z7Pznk19XTTzBtx");
+        assert_eq!(encode(Base::Base58btc, &id2).unwrap(), "z7paNL19xttacUY");
     }
 
     #[test]
@@ -231,32 +234,37 @@ mod tests {
         let id = "Decentralize everything!!";
 
         assert_eq!(decode("f446563656e7472616c697a652065766572797468696e672121").unwrap(),
-                   (Base::Base16, id.to_string())
-        );
+                   (Base::Base16, id.to_string()));
 
         assert_eq!(decode("zUXE7GvtEk8XTXs1GF8HSGbVA9FCX9SEBPe").unwrap(),
-                   (Base::Base58btc, id.to_string())
-        );
+                   (Base::Base58btc, id.to_string()));
 
-        // let id2 = "yes mani !";
+        let id2 = "yes mani !";
 
-        // assert_eq!(encode(Base::Base2, &id2).unwrap(),
-        //            "01111001011001010111001100100000011011010110000101101110011010010010000000100001");
-        // assert_eq!(encode(Base::Base8, &id2).unwrap(),
-        //            "7171312714403326055632220041");
-        // assert_eq!(encode(Base::Base10, &id2).unwrap(),
-        //            "9573277761329450583662625");
-        // assert_eq!(encode(Base::Base16, &id2).unwrap(),
-        //            "f796573206d616e692021");
-        // assert_eq!(encode(Base::Base32hex, &id2).unwrap(),
-        //            "vf5in683dc5n6i811");
-        // assert_eq!(encode(Base::Base32, &id2).unwrap(),
-        //            "bpfsxgidnmfxgsibb");
-        // assert_eq!(encode(Base::Base32z, &id2).unwrap(),
-        //            "hxf1zgedpcfzg1ebb");
-        // assert_eq!(encode(Base::Base58flickr, &id2).unwrap(),
-        //            "Z7Pznk19XTTzBtx");
-        // assert_eq!(encode(Base::Base58btc, &id2).unwrap(),
-        //            "z7paNL19xttacUY");
+        assert_eq!(decode("011110010110010101110011001000000110110101100001011011100110100100100\
+                           00000100001")
+                       .unwrap(),
+                   (Base::Base2, id2.to_string()));
+        assert_eq!(decode("7171312714403326055632220041").unwrap(),
+                   (Base::Base8, id2.to_string()));
+        assert_eq!(decode("9573277761329450583662625").unwrap(),
+                   (Base::Base10, id2.to_string()));
+        assert_eq!(decode("f796573206d616e692021").unwrap(),
+                   (Base::Base16, id2.to_string()));
+        assert_eq!(decode("vf5in683dc5n6i811").unwrap(),
+                   (Base::Base32hex, id2.to_string()));
+        assert_eq!(decode("bpfsxgidnmfxgsibb").unwrap(),
+                   (Base::Base32, id2.to_string()));
+        assert_eq!(decode("hxf1zgedpcfzg1ebb").unwrap(),
+                   (Base::Base32z, id2.to_string()));
+        assert_eq!(decode("Z7Pznk19XTTzBtx").unwrap(),
+                   (Base::Base58flickr, id2.to_string()));
+        assert_eq!(decode("z7paNL19xttacUY").unwrap(),
+                   (Base::Base58btc, id2.to_string()));
+
+        // Fails
+        assert_eq!(decode("Lllll"), Err(MultibaseError::UnkownBase));
+        assert_eq!(decode("Ullll"), Err(MultibaseError::UnsupportedBase));
+
     }
 }

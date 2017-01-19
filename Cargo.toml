@@ -5,7 +5,7 @@ description = "multibase rust"
 homepage = "https://github.com/multiformats/rust-multibase"
 authors = ["Friedel Ziegelmayer <dignifiedquire@gmail.com>"]
 
-keywords = ["ipld", "ipfs", "hash", "multihash", "multibase", "cid"]
+keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
 
 license = "MIT"
 

@@ -9,13 +9,14 @@ extern crate base_x;
 pub enum Error {
     UnsupportedBase,
     UnkownBase,
+    Utf8Error,
 }
 
 /// Encoding result type
 pub type EncodeResult = Result<String, Error>;
 
 /// Decoding result type
-pub type DecodeResult = Result<(Base, String), Error>;
+pub type DecodeResult = Result<(Base, Vec<u8>), Error>;
 
 /// List of supported bases.
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -157,31 +158,90 @@ impl Base {
     }
 }
 
-fn vec_to_string(vector: Vec<i16>) -> String {
-    vector.into_iter()
-        .map(|u| String::from_utf16(&[u as u16]).unwrap())
-        .collect::<String>()
-}
-
-
-/// Encode a given string with the specified base.
-pub fn encode(base: Base, data: &str) -> EncodeResult {
-    base.alphabet().map(|alphabet| {
-        let chars: Vec<i16> = data.encode_utf16()
-            .map((|u| u as i16))
-            .collect();
-        base.code().to_string() + &base_x::encode(&alphabet, chars)
-    })
+pub trait Decodable {
+    fn decode(&self) -> DecodeResult;
 }
 
 /// Decode the string.
-pub fn decode(data: &str) -> DecodeResult {
-    let (base_char, content) = data.split_at(1);
+pub fn decode<T: Decodable>(data: T) -> DecodeResult {
+    data.decode()
+}
 
-    Base::from_code(base_char).and_then(|base| {
-        base.alphabet().map(|alphabet| {
-            let res = base_x::decode(&alphabet, content);
-            (base, vec_to_string(res))
+impl<'a> Decodable for &'a str {
+    fn decode(&self) -> DecodeResult {
+        let (base_char, content) = self.split_at(1);
+
+        Base::from_code(base_char).and_then(|base| {
+            base.alphabet().map(|alphabet| {
+                let res = base_x::decode(&alphabet, content)
+                    .iter()
+                    .map(|u| *u as u8)
+                    .collect();
+                (base, res)
+            })
         })
-    })
+    }
+}
+
+impl Decodable for String {
+    fn decode(&self) -> DecodeResult {
+        (&self[..]).decode()
+    }
+}
+
+impl<'a> Decodable for &'a [u8] {
+    fn decode(&self) -> DecodeResult {
+        match std::str::from_utf8(self) {
+            Ok(string) => string.decode(),
+            Err(_) => Err(Error::Utf8Error),
+        }
+    }
+}
+
+
+pub trait Encodable {
+    /// Encode with the given base
+    fn encode(&self, base: Base) -> EncodeResult;
+}
+
+impl<'a> Encodable for &'a str {
+    fn encode(&self, base: Base) -> EncodeResult {
+        base.alphabet().map(|alphabet| {
+            let chars: Vec<i16> = self.encode_utf16()
+                .map((|u| u as i16))
+                .collect();
+
+            println!("in {:?}", chars);
+            base.code().to_string() + &base_x::encode(&alphabet, chars)
+        })
+    }
+}
+
+impl Encodable for String {
+    fn encode(&self, base: Base) -> EncodeResult {
+        (&self[..]).encode(base)
+    }
+}
+
+impl<'a> Encodable for &'a [u8] {
+    fn encode(&self, base: Base) -> EncodeResult {
+        base.alphabet().map(|alphabet| {
+            let chars = self.to_vec()
+                .iter()
+                .map(|u| *u as i16)
+                .collect();
+            base.code().to_string() + &base_x::encode(&alphabet, chars)
+        })
+    }
+}
+
+impl Encodable for Vec<u8> {
+    fn encode(&self, base: Base) -> EncodeResult {
+        self.as_slice().encode(base)
+    }
+}
+
+/// Encode with the given string
+pub fn encode<T: Encodable>(base: Base, data: T) -> EncodeResult {
+    data.encode(base)
 }

@@ -1,6 +1,6 @@
 [package]
 name = "multibase"
-version = "0.2.0"
+version = "0.3.0"
 description = "multibase rust"
 homepage = "https://github.com/multiformats/rust-multibase"
 authors = ["Friedel Ziegelmayer <dignifiedquire@gmail.com>"]

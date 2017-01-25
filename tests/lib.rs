@@ -116,4 +116,6 @@ fn test_decode() {
     // Fails
     assert_eq!(decode("Lllll"), Err(Error::UnkownBase));
     assert_eq!(decode("Ullll"), Err(Error::UnsupportedBase));
+
+    assert_eq!(decode("z7pa_L19xttacUY"), Err(Error::InvalidBaseString))
 }

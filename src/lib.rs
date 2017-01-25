@@ -4,12 +4,15 @@
 
 extern crate base_x;
 
+use std::panic;
+
 /// Error types
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Error {
     UnsupportedBase,
     UnkownBase,
     Utf8Error,
+    InvalidBaseString,
 }
 
 /// Encoding result type
@@ -167,18 +170,26 @@ pub fn decode<T: Decodable>(data: T) -> DecodeResult {
     data.decode()
 }
 
+/// base_x panics on invalid input
+fn safe_decode(alphabet: &str, content: &str) -> std::thread::Result<Vec<i16>> {
+    panic::catch_unwind(|| base_x::decode(alphabet, content))
+}
+
 impl<'a> Decodable for &'a str {
     fn decode(&self) -> DecodeResult {
         let (base_char, content) = self.split_at(1);
 
         Base::from_code(base_char).and_then(|base| {
-            base.alphabet().map(|alphabet| {
-                let res = base_x::decode(&alphabet, content)
-                    .iter()
-                    .map(|u| *u as u8)
-                    .collect();
-                (base, res)
-            })
+            base.alphabet()
+                .and_then(|alphabet| {
+                    safe_decode(&alphabet, content).map_err(|_| Error::InvalidBaseString)
+                })
+                .map(|decoded| {
+                    let res = decoded.iter()
+                        .map(|u| *u as u8)
+                        .collect();
+                    (base, res)
+                })
         })
     }
 }

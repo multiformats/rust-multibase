@@ -4,7 +4,8 @@
 
 extern crate base_x;
 
-use std::panic;
+use std::error;
+use std::fmt;
 
 /// Error types
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -13,6 +14,24 @@ pub enum Error {
     UnkownBase,
     Utf8Error,
     InvalidBaseString,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Fail")
+    }
+}
+
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        "Sad face"
+    }
+}
+
+impl From<base_x::EncodeError> for Error {
+    fn from(_: base_x::EncodeError) -> Error {
+        Error::InvalidBaseString
+    }
 }
 
 /// Encoding result type
@@ -170,11 +189,6 @@ pub fn decode<T: Decodable>(data: T) -> DecodeResult {
     data.decode()
 }
 
-/// base_x panics on invalid input
-fn safe_decode(alphabet: &str, content: &str) -> std::thread::Result<Vec<i16>> {
-    panic::catch_unwind(|| base_x::decode(alphabet, content))
-}
-
 impl<'a> Decodable for &'a str {
     fn decode(&self) -> DecodeResult {
         let (base_char, content) = self.split_at(1);
@@ -182,7 +196,8 @@ impl<'a> Decodable for &'a str {
         Base::from_code(base_char).and_then(|base| {
             base.alphabet()
                 .and_then(|alphabet| {
-                    safe_decode(&alphabet, content).map_err(|_| Error::InvalidBaseString)
+                    base_x::decode(&alphabet, content)
+                        .map_err(|_| Error::InvalidBaseString)
                 })
                 .map(|decoded| {
                     let res = decoded.iter()
@@ -218,12 +233,12 @@ pub trait Encodable {
 impl<'a> Encodable for &'a str {
     fn encode(&self, base: Base) -> EncodeResult {
         base.alphabet().map(|alphabet| {
-            let chars: Vec<i16> = self.encode_utf16()
-                .map((|u| u as i16))
-                .collect();
+            let chars = self.encode_utf16()
+                .collect::<Vec<u16>>();
 
             println!("in {:?}", chars);
-            base.code().to_string() + &base_x::encode(&alphabet, chars)
+
+            base.code().to_string() + &base_x::encode(&alphabet, chars).unwrap()
         })
     }
 }
@@ -236,13 +251,13 @@ impl Encodable for String {
 
 impl<'a> Encodable for &'a [u8] {
     fn encode(&self, base: Base) -> EncodeResult {
-        base.alphabet().map(|alphabet| {
-            let chars = self.to_vec()
-                .iter()
-                .map(|u| *u as i16)
-                .collect();
-            base.code().to_string() + &base_x::encode(&alphabet, chars)
-        })
+        let alphabet = try!(base.alphabet());
+        let chars = self.to_vec()
+            .iter()
+            .map(|u| *u as u16)
+            .collect();
+        let encoded = try!(base_x::encode(&alphabet, chars));
+        Ok(base.code().to_string() + &encoded)
     }
 }
 

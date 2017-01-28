@@ -199,6 +199,15 @@ pub trait Decodable {
 }
 
 /// Decode the string.
+///
+/// # Examples
+///
+/// ```
+/// use multibase::{Base, decode};
+///
+/// assert_eq!(decode("zCn8eVZg").unwrap(),
+///            (Base::Base58btc, b"hello".to_vec()));
+/// ```
 pub fn decode<T: Decodable>(data: T) -> Result<(Base, Vec<u8>), Error> {
     data.decode()
 }
@@ -272,6 +281,15 @@ impl Encodable for Vec<u8> {
 }
 
 /// Encode with the given string
+///
+/// # Examples
+///
+/// ```
+/// use multibase::{Base, encode};
+///
+/// assert_eq!(encode(Base::Base58btc, "hello").unwrap(),
+///            "zCn8eVZg");
+/// ```
 pub fn encode<T: Encodable>(base: Base, data: T) -> Result<String, Error> {
     data.encode(base)
 }

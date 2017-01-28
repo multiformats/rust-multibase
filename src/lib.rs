@@ -18,13 +18,27 @@ pub enum Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Fail")
+        use Error::*;
+
+        match *self {
+            UnsupportedBase => write!(f, "Unsupported base"),
+            UnkownBase => write!(f, "Unkown base"),
+            Utf8Error => write!(f, "Invalid utf8 string"),
+            InvalidBaseString => write!(f, "Invalid base string"),
+        }
     }
 }
 
 impl error::Error for Error {
     fn description(&self) -> &str {
-        "Sad face"
+        use Error::*;
+
+        match *self {
+            UnsupportedBase => "Unsupported base",
+            UnkownBase => "Unkown base",
+            Utf8Error => "Invalid utf8 string",
+            InvalidBaseString => "Invalid base string",
+        }
     }
 }
 
@@ -34,11 +48,11 @@ impl From<base_x::EncodeError> for Error {
     }
 }
 
-/// Encoding result type
-pub type EncodeResult = Result<String, Error>;
-
-/// Decoding result type
-pub type DecodeResult = Result<(Base, Vec<u8>), Error>;
+impl From<base_x::DecodeError> for Error {
+    fn from(_: base_x::DecodeError) -> Error {
+        Error::InvalidBaseString
+    }
+}
 
 /// List of supported bases.
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -181,42 +195,35 @@ impl Base {
 }
 
 pub trait Decodable {
-    fn decode(&self) -> DecodeResult;
+    fn decode(&self) -> Result<(Base, Vec<u8>), Error>;
 }
 
 /// Decode the string.
-pub fn decode<T: Decodable>(data: T) -> DecodeResult {
+pub fn decode<T: Decodable>(data: T) -> Result<(Base, Vec<u8>), Error> {
     data.decode()
 }
 
 impl<'a> Decodable for &'a str {
-    fn decode(&self) -> DecodeResult {
+    fn decode(&self) -> Result<(Base, Vec<u8>), Error> {
         let (base_char, content) = self.split_at(1);
-
-        Base::from_code(base_char).and_then(|base| {
-            base.alphabet()
-                .and_then(|alphabet| {
-                    base_x::decode(&alphabet, content)
-                        .map_err(|_| Error::InvalidBaseString)
-                })
-                .map(|decoded| {
-                    let res = decoded.iter()
-                        .map(|u| *u as u8)
-                        .collect();
-                    (base, res)
-                })
-        })
-    }
+        let base = try!(Base::from_code(base_char));
+        let alphabet = try!(base.alphabet());
+        let decoded = try!(base_x::decode(&alphabet, content));
+        let res = decoded.iter()
+            .map(|u| *u as u8)
+            .collect();
+        Ok((base, res))
+     }
 }
 
 impl Decodable for String {
-    fn decode(&self) -> DecodeResult {
+    fn decode(&self) -> Result<(Base, Vec<u8>), Error> {
         (&self[..]).decode()
     }
 }
 
 impl<'a> Decodable for &'a [u8] {
-    fn decode(&self) -> DecodeResult {
+    fn decode(&self) -> Result<(Base, Vec<u8>), Error> {
         match std::str::from_utf8(self) {
             Ok(string) => string.decode(),
             Err(_) => Err(Error::Utf8Error),
@@ -227,30 +234,27 @@ impl<'a> Decodable for &'a [u8] {
 
 pub trait Encodable {
     /// Encode with the given base
-    fn encode(&self, base: Base) -> EncodeResult;
+    fn encode(&self, base: Base) -> Result<String, Error>;
 }
 
 impl<'a> Encodable for &'a str {
-    fn encode(&self, base: Base) -> EncodeResult {
-        base.alphabet().map(|alphabet| {
-            let chars = self.encode_utf16()
-                .collect::<Vec<u16>>();
+    fn encode(&self, base: Base) -> Result<String, Error> {
+        let alphabet = try!(base.alphabet());
+        let chars = self.encode_utf16().collect::<Vec<u16>>();
 
-            println!("in {:?}", chars);
-
-            base.code().to_string() + &base_x::encode(&alphabet, chars).unwrap()
-        })
+        let encoded = try!(base_x::encode(&alphabet, chars));
+        Ok(base.code().to_string() + &encoded)
     }
 }
 
 impl Encodable for String {
-    fn encode(&self, base: Base) -> EncodeResult {
+    fn encode(&self, base: Base) -> Result<String, Error> {
         (&self[..]).encode(base)
     }
 }
 
 impl<'a> Encodable for &'a [u8] {
-    fn encode(&self, base: Base) -> EncodeResult {
+    fn encode(&self, base: Base) -> Result<String, Error> {
         let alphabet = try!(base.alphabet());
         let chars = self.to_vec()
             .iter()
@@ -262,12 +266,12 @@ impl<'a> Encodable for &'a [u8] {
 }
 
 impl Encodable for Vec<u8> {
-    fn encode(&self, base: Base) -> EncodeResult {
+    fn encode(&self, base: Base) -> Result<String, Error> {
         self.as_slice().encode(base)
     }
 }
 
 /// Encode with the given string
-pub fn encode<T: Encodable>(base: Base, data: T) -> EncodeResult {
+pub fn encode<T: Encodable>(base: Base, data: T) -> Result<String, Error> {
     data.encode(base)
 }

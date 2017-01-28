@@ -75,7 +75,7 @@ fn test_encode() {
 
 #[test]
 fn test_decode() {
-    let id = "Decentralize everything!!".as_bytes();
+    let id = b"Decentralize everything!!";
 
     assert_eq!(decode("f446563656e7472616c697a652065766572797468696e672121").unwrap(),
                (Base::Base16, id.to_vec()));
@@ -90,7 +90,7 @@ fn test_decode() {
     assert_eq!(decode("zUXE7GvtEk8XTXs1GF8HSGbVA9FCX9SEBPe").unwrap(),
                (Base::Base58btc, id.to_vec()));
 
-    let id2 = "yes mani !".as_bytes();
+    let id2 = b"yes mani !";
 
     assert_eq!(decode("011110010110010101110011001000000110110101100001011011100110100100100\
                        00000100001")

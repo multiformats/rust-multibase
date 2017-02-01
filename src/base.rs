@@ -52,8 +52,6 @@ pub fn encode(alphabet: &[u8], input: &[u8]) -> Vec<u8> {
 
     digits.extend(leaders);
 
-    let mut output = String::new();
-
     digits.iter().rev().map(|digit| alphabet[*digit as usize]).collect()
 }
 
@@ -116,11 +114,14 @@ mod test {
         ($name:ident, $alph:expr, $data:expr, $expect:expr) => {
             #[test]
             fn $name() {
-                let encoded = encode($alph, $data);
-                assert_eq!(encoded, $expect, "Encoding is ok");
+                let data: &[u8] = $data;
+                let expect: &[u8] = $expect;
 
-                let decoded = decode($alph, $expect).expect("Decoding must succeed");
-                assert_eq!(decoded, $data, "Decoding is ok");
+                let encoded = encode($alph, data);
+                assert_eq!(encoded, expect, "Encoding is ok");
+
+                let decoded = decode($alph, expect).expect("Decoding must succeed");
+                assert_eq!(decoded, data, "Decoding is ok");
             }
         }
     }
@@ -128,10 +129,28 @@ mod test {
     make_test!(base2_a, BASE2, &[0x00,0x0f], b"01111");
     make_test!(base2_b, BASE2, &[0x00,0xff], b"011111111"); // Note the first leading zero byte is compressed into 1 char
     make_test!(base2_c, BASE2, &[0x0f,0xff], b"111111111111");
-    make_test!(base2_d, BASE2, &[0xff,0x00,0xff,0x00], b"111111111111");
+    make_test!(base2_d, BASE2, &[0xff,0x00,0xff,0x00], b"11111111000000001111111100000000");
 
-    make_test!(base58, BASE58,
+    make_test!(base16_a, BASE16, &[0x00,0x00,0x00,0x0f], b"000f");
+    make_test!(base16_b, BASE16, &[0x00,0x0f,0xff], b"0fff");
+    make_test!(base16_c, BASE16, &[0xff,0xff], b"ffff");
+
+    make_test!(base58_a, BASE58, &[], b"");
+    make_test!(base58_b, BASE58, &[0x61], b"2g");
+    make_test!(base58_c, BASE58, &[0x62,0x62,0x62], b"a3gV");
+    make_test!(base58_d, BASE58, &[0x63,0x63,0x63], b"aPEr");
+    make_test!(base58_e, BASE58,
         &[0x73,0x69,0x6d,0x70,0x6c,0x79,0x20,0x61,0x20,0x6c,0x6f,0x6e,0x67,0x20,0x73,0x74,0x72,0x69,0x6e,0x67],
         b"2cFupjhnEsSn59qHXstmK2ffpLv2"
     );
+    make_test!(base58_f, BASE58,
+        &[0x00,0xeb,0x15,0x23,0x1d,0xfc,0xeb,0x60,0x92,0x58,0x86,0xb6,0x7d,0x06,0x52,0x99,0x92,0x59,0x15,0xae,0xb1,0x72,0xc0,0x66,0x47],
+        b"1NS17iag9jJgTHD1VXjvLCEnZuQ3rJDE9L"
+    );
+    make_test!(base58_g, BASE58,
+        &[0x51,0x6b,0x6f,0xcd,0x0f],
+        b"ABnLTmg"
+    );
+
+    // TODO: Add more tests from fixtures
 }

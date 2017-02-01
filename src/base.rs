@@ -64,18 +64,23 @@ pub fn decode(alphabet: &[u8], input: &[u8]) -> Result<Vec<u8>, DecodeError> {
     let base = alphabet.len() as u16;
     let leader = alphabet.get(0).ok_or(DecodeError)?;
 
-    // 0xFF will be considered an invalid byte
-    let mut alphabet_map = [255u8; 256];
+    // 0xFF is not a valid ASCII value, so it can be safely used as
+    // invalid marker in the lookup table
+    const INVALID: u8 = 0xFF;
+
+    // Ideally this lookup table would be generated on compile time for
+    // All the alphabets. That said, this should be pretty darn fast anyway.
+    let mut alphabet_lut = [INVALID; 256];
 
     for (i, byte) in alphabet.iter().enumerate() {
-        alphabet_map[*byte as usize] = i as u8;
+        alphabet_lut[*byte as usize] = i as u8;
     }
 
     let mut bytes: Vec<u8> = vec![0];
 
     for c in input {
-        let mut carry = match alphabet_map[*c as usize] {
-            0xFF => return Err(DecodeError),
+        let mut carry = match alphabet_lut[*c as usize] {
+            INVALID => return Err(DecodeError),
             carry => carry,
         } as u16;
 

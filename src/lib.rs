@@ -4,8 +4,8 @@
 
 mod base;
 
-use std::error;
-use std::fmt;
+use std::{error, fmt};
+use std::ascii::AsciiExt;
 
 /// Error types
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -30,7 +30,7 @@ impl error::Error for Error {
         match *self {
             UnsupportedBase => "Unsupported base",
             UnkownBase => "Unkown base",
-            InvalidBaseString => "Decoding error",
+            InvalidBaseString => "Invalid base string",
         }
     }
 }
@@ -45,7 +45,7 @@ impl From<base::DecodeError> for Error {
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Base {
     /// unary tends to be 11111
-    Base1,
+    Base1 = b'1' as isize,
     /// binary has 1 and 0
     Base2,
     /// highest char in octal
@@ -184,7 +184,7 @@ pub trait Decodable {
 /// ```
 /// use multibase::{Base, decode};
 ///
-/// assert_eq!(decode(b"zCn8eVZg").unwrap(),
+/// assert_eq!(decode("zCn8eVZg").unwrap(),
 ///            (Base::Base58btc, b"hello".to_vec()));
 /// ```
     #[inline]
@@ -192,9 +192,13 @@ pub fn decode<T: Decodable>(data: T) -> Result<(Base, Vec<u8>)> {
     data.decode()
 }
 
-impl Decodable for [u8] {
+impl Decodable for str {
     fn decode(&self) -> Result<(Base, Vec<u8>)> {
-        let base = try!(Base::from_code(*self.get(0).unwrap_or(&0)));
+        if !self.is_ascii() {
+            return Err(Error::InvalidBaseString);
+        }
+        let code = self.bytes().next().unwrap_or(0);
+        let base = Base::from_code(code)?;
         let content = &self[1..];
         let alphabet = try!(base.alphabet());
         let decoded = try!(base::decode(&alphabet, content));
@@ -202,7 +206,7 @@ impl Decodable for [u8] {
      }
 }
 
-impl<'a, D: AsRef<[u8]>> Decodable for D {
+impl<'a, D: AsRef<str>> Decodable for D {
     #[inline]
     fn decode(&self) -> Result<(Base, Vec<u8>)> {
         self.as_ref().decode()
@@ -211,23 +215,23 @@ impl<'a, D: AsRef<[u8]>> Decodable for D {
 
 pub trait Encodable {
     /// Encode with the given base
-    fn encode(&self, base: Base) -> Result<Vec<u8>>;
+    fn encode(&self, base: Base) -> Result<String>;
 }
 
 impl Encodable for [u8] {
     #[inline]
-    fn encode(&self, base: Base) -> Result<Vec<u8>> {
+    fn encode(&self, base: Base) -> Result<String> {
         let alphabet = try!(base.alphabet());
 
         let mut encoded = base::encode(alphabet, self);
-        encoded.insert(0, base.code());
+        encoded.insert(0, base.code() as char);
         Ok(encoded)
     }
 }
 
 impl<'a, E: AsRef<[u8]>> Encodable for E {
     #[inline]
-    fn encode(&self, base: Base) -> Result<Vec<u8>> {
+    fn encode(&self, base: Base) -> Result<String> {
         self.as_ref().encode(base)
     }
 }
@@ -240,8 +244,8 @@ impl<'a, E: AsRef<[u8]>> Encodable for E {
 /// use multibase::{Base, encode};
 ///
 /// assert_eq!(encode(Base::Base58btc, b"hello").unwrap(),
-///            b"zCn8eVZg");
+///            "zCn8eVZg");
 /// ```
-pub fn encode<T: Encodable>(base: Base, data: T) -> Result<Vec<u8>> {
+pub fn encode<T: Encodable>(base: Base, data: T) -> Result<String> {
     data.encode(base)
 }

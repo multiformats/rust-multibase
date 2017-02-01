@@ -64,8 +64,8 @@ pub fn decode(alphabet: &[u8], input: &[u8]) -> Result<Vec<u8>, DecodeError> {
     let base = alphabet.len() as u16;
     let leader = alphabet.get(0).ok_or(DecodeError)?;
 
-    // 0xFF is not a valid ASCII value, so it can be safely used as
-    // invalid marker in the lookup table
+    // Alphabet cannot be longer than 255 bytes, so 0xFF is a safe bet for an
+    // invalid index.
     const INVALID: u8 = 0xFF;
 
     // Ideally this lookup table would be generated on compile time for

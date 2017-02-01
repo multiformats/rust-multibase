@@ -11,5 +11,3 @@ license = "MIT"
 
 readme = "README.md"
 
-[dependencies]
-base-x = "~0.1.3"

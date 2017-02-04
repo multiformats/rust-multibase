@@ -45,7 +45,7 @@ impl From<base_x::DecodeError> for Error {
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Base {
     /// unary tends to be 11111
-    Base1 = b'1' as isize,
+    Base1,
     /// binary has 1 and 0
     Base2,
     /// highest char in octal

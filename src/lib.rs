@@ -2,7 +2,7 @@
 /// !
 /// ! Implementation of [multibase](https://github.com/multiformats/multibase) in Rust.
 
-mod base;
+extern crate base_x;
 
 use std::{error, fmt};
 use std::ascii::AsciiExt;
@@ -35,8 +35,8 @@ impl error::Error for Error {
     }
 }
 
-impl From<base::DecodeError> for Error {
-    fn from(_: base::DecodeError) -> Error {
+impl From<base_x::DecodeError> for Error {
+    fn from(_: base_x::DecodeError) -> Error {
         Error::InvalidBaseString
     }
 }
@@ -200,8 +200,8 @@ impl Decodable for str {
         let code = self.bytes().next().unwrap_or(0);
         let base = Base::from_code(code)?;
         let content = &self[1..];
-        let alphabet = try!(base.alphabet());
-        let decoded = try!(base::decode(&alphabet, content));
+        let alphabet = base.alphabet()?;
+        let decoded = base_x::decode(alphabet, content)?;
         Ok((base, decoded))
      }
 }
@@ -221,9 +221,9 @@ pub trait Encodable {
 impl Encodable for [u8] {
     #[inline]
     fn encode(&self, base: Base) -> Result<String> {
-        let alphabet = try!(base.alphabet());
+        let alphabet = base.alphabet()?;
 
-        let mut encoded = base::encode(alphabet, self);
+        let mut encoded = base_x::encode(alphabet, self);
         encoded.insert(0, base.code() as char);
         Ok(encoded)
     }

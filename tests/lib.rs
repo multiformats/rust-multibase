@@ -4,31 +4,31 @@ use multibase::*;
 
 #[test]
 fn test_bases_code() {
-    assert_eq!(Base::Base1.code(), "1");
-    assert_eq!(Base::Base64urlpad.code(), "U");
+    assert_eq!(Base::Base1.code(), b'1');
+    assert_eq!(Base::Base64urlpad.code(), b'U');
 }
 
 #[test]
 fn test_round_trip() {
-    let strings = vec![
-        "helloworld",
-        "we all want decentralization",
-        "zdj7WfBb6j58iSJuAzDcSZgy2SxFhdpJ4H87uvMpfyN6hRGyH",
+    let slices: Vec<&[u8]> = vec![
+        b"helloworld",
+        b"we all want decentralization",
+        b"zdj7WfBb6j58iSJuAzDcSZgy2SxFhdpJ4H87uvMpfyN6hRGyH",
     ];
 
-    for s in strings {
+    for s in slices {
         assert_eq!(
             decode(
                 encode(Base::Base58btc, s).unwrap()
             ).unwrap(),
-            (Base::Base58btc, s.as_bytes().to_vec())
+            (Base::Base58btc, s.to_vec())
         );
     }
 
-    let val: Vec<u8> = vec![1, 2, 3, 98, 255, 255, 255];
+    let val = vec![1, 2, 3, 98, 255, 255, 255];
     assert_eq!(
         decode(
-            encode(Base::Base64url, val.clone()).unwrap()
+            encode(Base::Base64url, &val).unwrap()
         ).unwrap(),
         (Base::Base64url, val)
     )
@@ -36,27 +36,27 @@ fn test_round_trip() {
 
 #[test]
 fn test_bases_from_code() {
-    assert_eq!(Base::from_code("1").unwrap(), Base::Base1);
-    assert_eq!(Base::from_code("U").unwrap(), Base::Base64urlpad);
+    assert_eq!(Base::from_code(b'1').unwrap(), Base::Base1);
+    assert_eq!(Base::from_code(b'U').unwrap(), Base::Base64urlpad);
 }
 
 #[test]
 fn test_encode() {
-    let id = "Decentralize everything!!";
+    let id = b"Decentralize everything!!";
 
     assert_eq!(encode(Base::Base16, id).unwrap(),
                "f446563656e7472616c697a652065766572797468696e672121");
 
-    assert_eq!(encode(Base::Base16, id.to_string()).unwrap(),
+    assert_eq!(encode(Base::Base16, String::from_utf8(id.to_vec()).unwrap()).unwrap(),
                "f446563656e7472616c697a652065766572797468696e672121");
 
-    assert_eq!(encode(Base::Base16, id.as_bytes()).unwrap(),
+    assert_eq!(encode(Base::Base16, id.to_vec()).unwrap(),
                "f446563656e7472616c697a652065766572797468696e672121");
 
     assert_eq!(encode(Base::Base58btc, id).unwrap(),
                "zUXE7GvtEk8XTXs1GF8HSGbVA9FCX9SEBPe");
 
-    let id2 = "yes mani !";
+    let id2 = b"yes mani !";
 
     assert_eq!(encode(Base::Base2, id2).unwrap(),
                "01111001011001010111001100100000011011010110000101101110011010010010000000100\
@@ -81,10 +81,6 @@ fn test_decode() {
                (Base::Base16, id.to_vec()));
 
     assert_eq!(decode("f446563656e7472616c697a652065766572797468696e672121".to_string()).unwrap(),
-               (Base::Base16, id.to_vec()));
-
-
-    assert_eq!(decode("f446563656e7472616c697a652065766572797468696e672121".as_bytes()).unwrap(),
                (Base::Base16, id.to_vec()));
 
     assert_eq!(decode("zUXE7GvtEk8XTXs1GF8HSGbVA9FCX9SEBPe").unwrap(),

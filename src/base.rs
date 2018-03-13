@@ -28,7 +28,7 @@ macro_rules! build_base_enum {
             pub fn from_code(code: char) -> Result<Base> {
                 match code {
                     $( $val => Ok($var), )*
-                    _ => Err(Error::UnkownBase),
+                    _ => Err(Error::UnknownBase),
                 }
             }
         }

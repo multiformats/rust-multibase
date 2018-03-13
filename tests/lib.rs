@@ -104,8 +104,8 @@ fn test_decode() {
                (Base58btc, id2.to_vec()));
 
     // Fails
-    assert_eq!(decode("Lllll"), Err(Error::UnkownBase));
-    assert_eq!(decode("Ullll"), Err(Error::UnkownBase));
+    assert_eq!(decode("Lllll"), Err(Error::UnknownBase));
+    assert_eq!(decode("Ullll"), Err(Error::UnknownBase));
 
     assert_eq!(decode("z7pa_L19xttacUY"), Err(Error::InvalidBaseString))
 }

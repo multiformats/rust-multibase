@@ -4,7 +4,7 @@ use base_x;
 /// Error types
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Error {
-    UnkownBase,
+    UnknownBase,
     InvalidBaseString,
 }
 
@@ -21,7 +21,7 @@ impl error::Error for Error {
         use Error::*;
 
         match *self {
-            UnkownBase => "Unkown base",
+            UnknownBase => "Unknown base",
             InvalidBaseString => "Invalid base string",
         }
     }

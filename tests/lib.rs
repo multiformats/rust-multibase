@@ -66,6 +66,30 @@ fn test_encode() {
 }
 
 #[test]
+fn preserves_leading_zeroes() {
+    let id2 = b"\x00\x00\x00yes mani !";
+
+    assert_eq!(encode(Base2, id2), "00001111001011001010111001100100000011011010110000101101110011010010010000000100001");
+    assert_eq!(encode(Base8, id2), "7000171312714403326055632220041");
+    assert_eq!(encode(Base10, id2), "9000573277761329450583662625");
+    assert_eq!(encode(Base16Upper, id2), "F000796573206D616E692021");
+    assert_eq!(encode(Base16Lower, id2), "f000796573206d616e692021");
+    assert_eq!(encode(Base32UpperNoPad, id2), "BAAAAA6LFOMQG2YLONEQCC");
+    assert_eq!(encode(Base32UpperPad, id2),   "CAAAAA6LFOMQG2YLONEQCC===");
+    assert_eq!(encode(Base58flickr, id2), "Z1117Pznk19XTTzBtx");
+    assert_eq!(encode(Base58btc, id2),    "z1117paNL19xttacUY");
+    assert_eq!(encode(Base64UpperNoPad, id2),    "mAAAAeWVzIG1hbmkgIQ");
+    assert_eq!(encode(Base64UpperPad, id2),      "MAAAAeWVzIG1hbmkgIQ==");
+    assert_eq!(encode(Base64UrlUpperNoPad, id2), "uAAAAeWVzIG1hbmkgIQ");
+    assert_eq!(encode(Base64UrlUpperPad, id2),   "UAAAAeWVzIG1hbmkgIQ==");
+
+    let (base, decoded) = decode("z1117paNL19xttacUY").unwrap();
+    assert_eq!(base, Base58btc);
+    assert_eq!(&decoded, id2)
+}
+
+
+#[test]
 fn test_decode() {
     let id = b"Decentralize everything!!";
 

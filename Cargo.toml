@@ -13,3 +13,6 @@ readme = "README.md"
 
 [dependencies]
 base-x = "0.2"
+
+[workspace]
+members = ["cli"]

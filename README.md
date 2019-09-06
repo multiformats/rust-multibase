@@ -30,9 +30,15 @@ multibase = "*"
 Then run `cargo build`.
 
 ## Usage
+base32 and base64 are orders of magnitude faster due to byte alignment. Don't
+be surprised if using a different base turns into a performance bottleneck. You
+were warned!
 
 ```rust
-crate extern multibase
+use multibase::Base;
+
+let base64 = encode(Base::Base64, b"hello world");
+let (base, data) = decode(base64);
 ```
 
 ## Maintainers

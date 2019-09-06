@@ -1,4 +1,4 @@
-use {base_x, Base};
+use crate::Base;
 
 /// Trait implemented for byte-array-like types.
 pub trait Encodable {

@@ -4,6 +4,7 @@ version = "0.6.0"
 description = "multibase rust"
 homepage = "https://github.com/multiformats/rust-multibase"
 authors = ["Friedel Ziegelmayer <dignifiedquire@gmail.com>"]
+edition = "2018"
 
 keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
 

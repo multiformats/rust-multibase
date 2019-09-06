@@ -1,4 +1,4 @@
-use {Error, Result};
+use crate::{Error, Result};
 
 macro_rules! build_base_enum {
     {$( $val:expr => $var:ident: $alph:expr, )*} => {

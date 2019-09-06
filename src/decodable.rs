@@ -1,4 +1,4 @@
-use {base_x, Base, Error, Result};
+use crate::{Base, Error, Result};
 
 /// Trait implemented for string-like types.
 pub trait Decodable {

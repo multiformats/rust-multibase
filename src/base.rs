@@ -81,11 +81,11 @@ build_base_enum! {
     'm' => Base64: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 
     // rfc4648 with padding - MIME encoding
-    // 'M' => Base64pad: unimplemented!(),
+    'M' => Base64pad: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 
     // rfc4648 no padding
     'u' => Base64url: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
 
     // rfc4648 with padding
-    // 'U' => Base64urlpad: unimplemented!(),
+    'U' => Base64urlpad: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
 }

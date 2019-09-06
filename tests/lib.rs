@@ -103,9 +103,11 @@ fn test_decode() {
     assert_eq!(decode("z7paNL19xttacUY").unwrap(),
                (Base58btc, id2.to_vec()));
 
-    // Fails
-    assert_eq!(decode("Lllll"), Err(Error::UnknownBase));
-    assert_eq!(decode("Ullll"), Err(Error::UnknownBase));
+    assert_eq!(decode("mZg").unwrap(), (Base64, b"f".to_vec()));
+    assert_eq!(decode("MZg==").unwrap(), (Base64pad, b"f".to_vec()));
+    assert_eq!(decode("uZg").unwrap(), (Base64url, b"f".to_vec()));
+    assert_eq!(decode("UZg==").unwrap(), (Base64urlpad, b"f".to_vec()));
 
-    assert_eq!(decode("z7pa_L19xttacUY"), Err(Error::InvalidBaseString))
+    assert_eq!(decode("L1111"), Err(Error::UnknownBase));
+    assert_eq!(decode("z7pa_L19xttacUY"), Err(Error::InvalidBaseString));
 }

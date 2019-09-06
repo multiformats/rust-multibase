@@ -11,8 +11,24 @@ impl Decodable for str {
         let code = self.chars().next().ok_or(Error::InvalidBaseString)?;
         let base = Base::from_code(code)?;
         let content = &self[code.len_utf8()..];
-        let alphabet = base.alphabet();
-        let decoded = base_x::decode(alphabet, content)?;
+        let decoded = match base {
+            Base::Base64 => {
+                base64::decode_config(content, base64::STANDARD_NO_PAD)?
+            }
+            Base::Base64pad => {
+                base64::decode_config(content, base64::STANDARD)?
+            }
+            Base::Base64url => {
+                base64::decode_config(content, base64::URL_SAFE_NO_PAD)?
+            }
+            Base::Base64urlpad => {
+                base64::decode_config(content, base64::URL_SAFE)?
+            }
+            _ => {
+                let alphabet = base.alphabet();
+                base_x::decode(alphabet, content)?
+            }
+        };
         Ok((base, decoded))
      }
 }

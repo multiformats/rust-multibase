@@ -9,9 +9,24 @@ pub trait Encodable {
 impl Encodable for [u8] {
     #[inline]
     fn encode(&self, base: Base) -> String {
-        let alphabet = base.alphabet();
-
-        let mut encoded = base_x::encode(alphabet, self);
+        let mut encoded = match base {
+            Base::Base64 => {
+                base64::encode_config(self, base64::STANDARD_NO_PAD)
+            }
+            Base::Base64pad => {
+                base64::encode_config(self, base64::STANDARD)
+            }
+            Base::Base64url => {
+                base64::encode_config(self, base64::URL_SAFE_NO_PAD)
+            }
+            Base::Base64urlpad => {
+                base64::encode_config(self, base64::URL_SAFE)
+            }
+            _ => {
+                let alphabet = base.alphabet();
+                base_x::encode(alphabet, self)
+            }
+        };
         encoded.insert(0, base.code());
         encoded
     }

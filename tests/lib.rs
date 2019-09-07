@@ -4,7 +4,6 @@ use multibase::{decode, encode, Base, Error};
 #[test]
 fn test_bases_code() {
     assert_eq!(Base2.code(), '0');
-    //assert_eq!(Base32hexUpper.code(), 'V');
 }
 
 #[test]
@@ -23,13 +22,12 @@ fn test_round_trip() {
     }
 
     let val = vec![1, 2, 3, 98, 255, 255, 255];
-    assert_eq!(decode(encode(Base64url, &val)).unwrap(), (Base64url, val))
+    assert_eq!(decode(encode(Base64UrlUpperNoPad, &val)).unwrap(), (Base64UrlUpperNoPad, val))
 }
 
 #[test]
 fn test_bases_from_code() {
     assert_eq!(Base::from_code('0').unwrap(), Base2);
-    //assert_eq!(Base::from_code('V').unwrap(), Base32hexUpper);
 }
 
 #[test]
@@ -117,10 +115,10 @@ fn test_decode() {
         (Base58btc, id2.to_vec())
     );
 
-    assert_eq!(decode("mZg").unwrap(), (Base64, b"f".to_vec()));
-    assert_eq!(decode("MZg==").unwrap(), (Base64pad, b"f".to_vec()));
-    assert_eq!(decode("uZg").unwrap(), (Base64url, b"f".to_vec()));
-    assert_eq!(decode("UZg==").unwrap(), (Base64urlpad, b"f".to_vec()));
+    assert_eq!(decode("mZg").unwrap(), (Base64UpperNoPad, b"f".to_vec()));
+    assert_eq!(decode("MZg==").unwrap(), (Base64UpperPad, b"f".to_vec()));
+    assert_eq!(decode("uZg").unwrap(), (Base64UrlUpperNoPad, b"f".to_vec()));
+    assert_eq!(decode("UZg==").unwrap(), (Base64UrlUpperPad, b"f".to_vec()));
 
     assert_eq!(decode("L1111"), Err(Error::UnknownBase));
     assert_eq!(decode("z7pa_L19xttacUY"), Err(Error::InvalidBaseString));

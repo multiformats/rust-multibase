@@ -78,7 +78,7 @@ base_x!(Base8, b"01234567");
 // highest char in decimal
 base_x!(Base10, b"0123456789");
 // highest char in hex
-base_x!(Base16, b"0123456789ABCDEF");
+base_x!(Base16Upper, b"0123456789ABCDEF");
 base_x!(Base16Lower, b"0123456789abcdef");
 // highest letter
 base_x!(
@@ -93,9 +93,9 @@ base_x!(
 
 /// rfc4648 no padding
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Base32;
+pub struct Base32UpperNoPad;
 
-impl BaseImpl for Base32 {
+impl BaseImpl for Base32UpperNoPad {
     fn encode(input: &[u8]) -> String {
         base32::encode(base32::Alphabet::RFC4648 { padding: false }, input)
     }
@@ -111,9 +111,9 @@ impl BaseImpl for Base32 {
 
 /// rfc4648 with padding
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Base32pad;
+pub struct Base32UpperPad;
 
-impl BaseImpl for Base32pad {
+impl BaseImpl for Base32UpperPad {
     fn encode(input: &[u8]) -> String {
         base32::encode(base32::Alphabet::RFC4648 { padding: true }, input)
     }
@@ -129,9 +129,9 @@ impl BaseImpl for Base32pad {
 
 /// rfc4648 no padding
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Base64;
+pub struct Base64UpperNoPad;
 
-impl BaseImpl for Base64 {
+impl BaseImpl for Base64UpperNoPad {
     fn encode(input: &[u8]) -> String {
         base64::encode_config(input, base64::STANDARD_NO_PAD)
     }
@@ -144,9 +144,9 @@ impl BaseImpl for Base64 {
 
 /// rfc4648 with padding
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Base64pad;
+pub struct Base64UpperPad;
 
-impl BaseImpl for Base64pad {
+impl BaseImpl for Base64UpperPad {
     fn encode(input: &[u8]) -> String {
         base64::encode_config(input, base64::STANDARD)
     }
@@ -159,9 +159,9 @@ impl BaseImpl for Base64pad {
 
 /// rfc4648 no padding
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Base64url;
+pub struct Base64UrlUpperNoPad;
 
-impl BaseImpl for Base64url {
+impl BaseImpl for Base64UrlUpperNoPad {
     fn encode(input: &[u8]) -> String {
         base64::encode_config(input, base64::URL_SAFE_NO_PAD)
     }
@@ -174,9 +174,9 @@ impl BaseImpl for Base64url {
 
 /// rfc4648 with padding
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Base64urlpad;
+pub struct Base64UrlUpperPad;
 
-impl BaseImpl for Base64urlpad {
+impl BaseImpl for Base64UrlUpperPad {
     fn encode(input: &[u8]) -> String {
         base64::encode_config(input, base64::URL_SAFE)
     }
@@ -191,16 +191,16 @@ base_enum! {
     '0' => Base2,
     '7' => Base8,
     '9' => Base10,
-    'F' => Base16,
+    'F' => Base16Upper,
     'f' => Base16Lower,
-    'B' => Base32,
-    'C' => Base32pad,
+    'B' => Base32UpperNoPad,
+    'C' => Base32UpperPad,
     'Z' => Base58flickr,
     'z' => Base58btc,
-    'm' => Base64,
-    'M' => Base64pad,
-    'u' => Base64url,
-    'U' => Base64urlpad,
+    'm' => Base64UpperNoPad,
+    'M' => Base64UpperPad,
+    'u' => Base64UrlUpperNoPad,
+    'U' => Base64UrlUpperPad,
 }
 
 #[cfg(test)]
@@ -215,14 +215,14 @@ mod tests {
 
     #[test]
     fn test_base16() {
-        assert_eq!(Base16::encode(b"f"), "66");
-        assert_eq!(&Base16::decode("66").unwrap(), b"f");
+        assert_eq!(Base16Lower::encode(b"f"), "66");
+        assert_eq!(&Base16Lower::decode("66").unwrap(), b"f");
     }
 
     #[test]
     fn test_base32() {
-        assert_eq!(Base32::encode(b"f"), "MY");
-        assert_eq!(&Base32::decode("MY").unwrap(), b"f");
+        assert_eq!(Base32UpperNoPad::encode(b"f"), "MY");
+        assert_eq!(&Base32UpperNoPad::decode("MY").unwrap(), b"f");
     }
 
     #[test]
@@ -233,37 +233,37 @@ mod tests {
 
     #[test]
     fn test_base64() {
-        assert_eq!(Base64::encode(b"f"), "Zg");
-        assert_eq!(&Base64::decode("Zg").unwrap(), b"f");
+        assert_eq!(Base64UpperNoPad::encode(b"f"), "Zg");
+        assert_eq!(&Base64UpperNoPad::decode("Zg").unwrap(), b"f");
     }
 
     #[test]
     fn test_encode_padding() {
-        assert_eq!(Base32::encode(b"foo"), "MZXW6");
-        assert_eq!(Base32pad::encode(b"foo"), "MZXW6===");
+        assert_eq!(Base32UpperNoPad::encode(b"foo"), "MZXW6");
+        assert_eq!(Base32UpperPad::encode(b"foo"), "MZXW6===");
 
-        assert_eq!(Base32::encode(b"foob"), "MZXW6YQ");
-        assert_eq!(Base32pad::encode(b"foob"), "MZXW6YQ=");
+        assert_eq!(Base32UpperNoPad::encode(b"foob"), "MZXW6YQ");
+        assert_eq!(Base32UpperPad::encode(b"foob"), "MZXW6YQ=");
 
-        assert_eq!(Base32::encode(b"fooba"), "MZXW6YTB");
-        assert_eq!(Base32pad::encode(b"fooba"), "MZXW6YTB");
+        assert_eq!(Base32UpperNoPad::encode(b"fooba"), "MZXW6YTB");
+        assert_eq!(Base32UpperPad::encode(b"fooba"), "MZXW6YTB");
 
-        assert_eq!(Base32::encode(b"foobar"), "MZXW6YTBOI");
-        assert_eq!(Base32pad::encode(b"foobar"), "MZXW6YTBOI======");
+        assert_eq!(Base32UpperNoPad::encode(b"foobar"), "MZXW6YTBOI");
+        assert_eq!(Base32UpperPad::encode(b"foobar"), "MZXW6YTBOI======");
     }
 
     #[test]
     fn test_decode_padding() {
-        assert_eq!(&Base32::decode("MZXW6").unwrap(), b"foo");
-        assert_eq!(&Base32pad::decode("MZXW6===").unwrap(), b"foo");
+        assert_eq!(&Base32UpperNoPad::decode("MZXW6").unwrap(), b"foo");
+        assert_eq!(&Base32UpperPad::decode("MZXW6===").unwrap(), b"foo");
 
-        assert_eq!(&Base32::decode("MZXW6YQ").unwrap(), b"foob");
-        assert_eq!(&Base32pad::decode("MZXW6YQ=").unwrap(), b"foob");
+        assert_eq!(&Base32UpperNoPad::decode("MZXW6YQ").unwrap(), b"foob");
+        assert_eq!(&Base32UpperPad::decode("MZXW6YQ=").unwrap(), b"foob");
 
-        assert_eq!(&Base32::decode("MZXW6YTB").unwrap(), b"fooba");
-        assert_eq!(&Base32pad::decode("MZXW6YTB").unwrap(), b"fooba");
+        assert_eq!(&Base32UpperNoPad::decode("MZXW6YTB").unwrap(), b"fooba");
+        assert_eq!(&Base32UpperPad::decode("MZXW6YTB").unwrap(), b"fooba");
 
-        assert_eq!(&Base32::decode("MZXW6YTBOI").unwrap(), b"foobar");
-        assert_eq!(&Base32pad::decode("MZXW6YTBOI=====").unwrap(), b"foobar");
+        assert_eq!(&Base32UpperNoPad::decode("MZXW6YTBOI").unwrap(), b"foobar");
+        assert_eq!(&Base32UpperPad::decode("MZXW6YTBOI=====").unwrap(), b"foobar");
     }
 }

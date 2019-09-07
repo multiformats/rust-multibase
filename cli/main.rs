@@ -1,11 +1,8 @@
-use async_std::{
-    io::{self, Read, Write},
-    task,
-};
 use core::{fmt, str::FromStr};
 use exitfailure::ExitFailure;
 use failure::{format_err, Error};
 use multibase::Base;
+use std::io::{self, Read, Write};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -29,13 +26,11 @@ enum Mode {
 
 fn main() -> Result<(), ExitFailure> {
     env_logger::init();
-    task::block_on(async {
-        let opts = Opts::from_args();
-        match opts.mode {
-            Mode::Encode { base } => encode(base).await,
-            Mode::Decode => decode().await,
-        }
-    })
+    let opts = Opts::from_args();
+    match opts.mode {
+        Mode::Encode { base } => encode(base),
+        Mode::Decode => decode(),
+    }
 }
 
 #[derive(Debug)]
@@ -92,26 +87,26 @@ impl From<StrBase> for Base {
     }
 }
 
-async fn encode(base: StrBase) -> Result<(), ExitFailure> {
+fn encode(base: StrBase) -> Result<(), ExitFailure> {
     log::debug!("encoding with {}", base);
     let mut stdin = io::stdin();
     let mut stdout = io::stdout();
     let mut buffer = Vec::new();
-    stdin.read_to_end(&mut buffer).await?;
+    stdin.read_to_end(&mut buffer)?;
     log::debug!("read {:?} from stdin", buffer);
     let result = multibase::encode(base.into(), buffer.as_slice());
-    stdout.write_all(result.as_bytes()).await?;
+    stdout.write_all(result.as_bytes())?;
     Ok(())
 }
 
-async fn decode() -> Result<(), ExitFailure> {
+fn decode() -> Result<(), ExitFailure> {
     let mut stdin = io::stdin();
     let mut stdout = io::stdout();
     let mut buffer = String::new();
-    stdin.read_to_string(&mut buffer).await?;
+    stdin.read_to_string(&mut buffer)?;
     log::debug!("read {:?} from stdin", buffer);
     let (base, result) = multibase::decode(buffer.as_str())?;
     log::debug!("detected {}", StrBase(base));
-    stdout.write_all(result.as_slice()).await?;
+    stdout.write_all(result.as_slice())?;
     Ok(())
 }

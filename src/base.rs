@@ -16,7 +16,7 @@ macro_rules! base_x {
         impl $name {
             /// Get the matching alphabet.
             fn alphabet() -> &'static [u8] {
-                $alphabet.as_bytes()
+                $alphabet
             }
         }
 
@@ -72,23 +72,23 @@ macro_rules! base_enum {
 }
 
 // binary has 1 and 0
-base_x!(Base2, "01");
+base_x!(Base2, b"01");
 // highest char in octal
-base_x!(Base8, "01234567");
+base_x!(Base8, b"01234567");
 // highest char in decimal
-base_x!(Base10, "0123456789");
+base_x!(Base10, b"0123456789");
 // highest char in hex
-base_x!(Base16, "0123456789ABCDEF");
-base_x!(Base16Lower, "0123456789abcdef");
+base_x!(Base16, b"0123456789ABCDEF");
+base_x!(Base16Lower, b"0123456789abcdef");
 // highest letter
 base_x!(
     Base58flickr,
-    "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+    b"123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
 );
 // highest letter
 base_x!(
     Base58btc,
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+    b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 );
 
 /// rfc4648 no padding

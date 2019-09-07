@@ -1,5 +1,5 @@
-use std::{fmt, error};
 use base_x;
+use std::{error, fmt};
 
 /// Error types
 #[derive(PartialEq, Eq, Clone, Debug)]

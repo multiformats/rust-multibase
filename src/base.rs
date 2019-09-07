@@ -1,91 +1,269 @@
 use crate::{Error, Result};
 
-macro_rules! build_base_enum {
-    {$( $val:expr => $var:ident: $alph:expr, )*} => {
-        #[derive(PartialEq, Eq, Clone, Copy, Debug)]
-        pub enum Base {
-            $( $var, )*
+trait BaseImpl {
+    /// Encode a byte slice.
+    fn encode(input: &[u8]) -> String;
+
+    /// Decode a string.
+    fn decode(input: &str) -> Result<Vec<u8>>;
+}
+
+macro_rules! base_x {
+    ($name:ident, $alphabet:expr) => {
+        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub struct $name;
+
+        impl $name {
+            /// Get the matching alphabet.
+            fn alphabet() -> &'static [u8] {
+                $alphabet.as_bytes()
+            }
         }
 
-        use Base::*;
+        impl BaseImpl for $name {
+            fn encode(input: &[u8]) -> String {
+                let alphabet = Self::alphabet();
+                base_x::encode(alphabet, input)
+            }
+
+            fn decode(input: &str) -> Result<Vec<u8>> {
+                let alphabet = Self::alphabet();
+                let decoded = base_x::decode(alphabet, input)?;
+                Ok(decoded)
+            }
+        }
+    };
+}
+
+macro_rules! base_enum {
+    ( $($code:expr => $base:ident,)* ) => {
+        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub enum Base {
+            $( $base, )*
+        }
 
         impl Base {
-            /// Get the base code.
+            pub fn from_code(code: char) -> Result<Self> {
+        	match code {
+                    $( $code => Ok(Self::$base), )*
+            	    _ => Err(Error::UnknownBase),
+        	}
+            }
+
             pub fn code(&self) -> char {
-                match *self {
-                    $( $var => $val, )*
+                match self {
+                    $( Self::$base => $code, )*
                 }
             }
 
-            /// Get the matching alphabet.
-            pub fn alphabet(&self) -> &[u8] {
-                match *self {
-                    $( $var => $alph, )*
+            pub fn encode(&self, input: &[u8]) -> String {
+                match self {
+                    $( Self::$base => $base::encode(input), )*
                 }
             }
 
-            /// Convert a code to a base.
-            pub fn from_code(code: char) -> Result<Base> {
-                match code {
-                    $( $val => Ok($var), )*
-                    _ => Err(Error::UnknownBase),
+            pub fn decode(&self, input: &str) -> Result<Vec<u8>> {
+                match self {
+                    $( Self::$base => $base::decode(input), )*
                 }
             }
         }
     }
 }
 
-build_base_enum! {
-    // unary tends to be 11111
-    // '1' => Base1: unimplemented!(),
+// binary has 1 and 0
+base_x!(Base2, "01");
+// highest char in octal
+base_x!(Base8, "01234567");
+// highest char in decimal
+base_x!(Base10, "0123456789");
+// highest char in hex
+base_x!(Base16, "0123456789ABCDEF");
+base_x!(Base16Lower, "0123456789abcdef");
+// highest letter
+base_x!(
+    Base58flickr,
+    "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+);
+// highest letter
+base_x!(
+    Base58btc,
+    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+);
 
-    // binary has 1 and 0
-    '0' => Base2: b"01",
+/// rfc4648 no padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base32;
 
-    // highest char in octal
-    '7' => Base8: b"01234567",
+impl BaseImpl for Base32 {
+    fn encode(input: &[u8]) -> String {
+        base32::encode(base32::Alphabet::RFC4648 { padding: false }, input)
+    }
 
-    // highest char in decimal
-    '9' => Base10: b"0123456789",
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        if let Some(result) = base32::decode(base32::Alphabet::RFC4648 { padding: false }, input) {
+            Ok(result)
+        } else {
+            Err(Error::InvalidBaseString)
+        }
+    }
+}
 
-    // highest char in hex
-    'f' => Base16: b"0123456789abcdef",
-    'F' => Base16Upper: b"0123456789ABCDEF",
+/// rfc4648 with padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base32pad;
 
-    // rfc4648 no padding - highest char
-    'v' => Base32hex: b"0123456789abcdefghijklmnopqrstuv",
-    'V' => Base32hexUpper: b"0123456789ABCDEFGHIJKLMNOPQRSTUV",
+impl BaseImpl for Base32pad {
+    fn encode(input: &[u8]) -> String {
+        base32::encode(base32::Alphabet::RFC4648 { padding: true }, input)
+    }
 
-    // rfc4648 with padding
-    // 't' => Base32hexpad: unimplemented!(),
-    // 'T' => Base32hexpadUpper: unimplemented!(),
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        if let Some(result) = base32::decode(base32::Alphabet::RFC4648 { padding: true }, input) {
+            Ok(result)
+        } else {
+            Err(Error::InvalidBaseString)
+        }
+    }
+}
 
-    // rfc4648 no padding
-    'b' => Base32: b"abcdefghijklmnopqrstuvwxyz234567",
-    'B' => Base32Upper: b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+/// rfc4648 no padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base64;
 
-    // rfc4648 with padding
-    // 'c' => Base32pad: unimplemented!(),
-    // 'C' => Base32padUpper: unimplemented!(),
+impl BaseImpl for Base64 {
+    fn encode(input: &[u8]) -> String {
+        base64::encode_config(input, base64::STANDARD_NO_PAD)
+    }
 
-    // z-base-32 - used by Tahoe-LAFS - highest letter
-    'h' => Base32z: b"ybndrfg8ejkmcpqxot1uwisza345h769",
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        let result = base64::decode_config(input, base64::STANDARD_NO_PAD)?;
+        Ok(result)
+    }
+}
 
-    // highest letter
-    'Z' => Base58flickr: b"123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
+/// rfc4648 with padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base64pad;
 
-    // highest letter
-    'z' => Base58btc: b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
+impl BaseImpl for Base64pad {
+    fn encode(input: &[u8]) -> String {
+        base64::encode_config(input, base64::STANDARD)
+    }
 
-    // rfc4648 no padding
-    'm' => Base64: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        let result = base64::decode_config(input, base64::STANDARD)?;
+        Ok(result)
+    }
+}
 
-    // rfc4648 with padding - MIME encoding
-    'M' => Base64pad: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+/// rfc4648 no padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base64url;
 
-    // rfc4648 no padding
-    'u' => Base64url: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+impl BaseImpl for Base64url {
+    fn encode(input: &[u8]) -> String {
+        base64::encode_config(input, base64::URL_SAFE_NO_PAD)
+    }
 
-    // rfc4648 with padding
-    'U' => Base64urlpad: b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        let result = base64::decode_config(input, base64::URL_SAFE_NO_PAD)?;
+        Ok(result)
+    }
+}
+
+/// rfc4648 with padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base64urlpad;
+
+impl BaseImpl for Base64urlpad {
+    fn encode(input: &[u8]) -> String {
+        base64::encode_config(input, base64::URL_SAFE)
+    }
+
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        let result = base64::decode_config(input, base64::URL_SAFE)?;
+        Ok(result)
+    }
+}
+
+base_enum! {
+    '0' => Base2,
+    '7' => Base8,
+    '9' => Base10,
+    'F' => Base16,
+    'f' => Base16Lower,
+    'B' => Base32,
+    'C' => Base32pad,
+    'Z' => Base58flickr,
+    'z' => Base58btc,
+    'm' => Base64,
+    'M' => Base64pad,
+    'u' => Base64url,
+    'U' => Base64urlpad,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_base2() {
+        assert_eq!(Base2::encode(b"f"), "1100110");
+        assert_eq!(&Base2::decode("1100110").unwrap(), b"f");
+    }
+
+    #[test]
+    fn test_base16() {
+        assert_eq!(Base16::encode(b"f"), "66");
+        assert_eq!(&Base16::decode("66").unwrap(), b"f");
+    }
+
+    #[test]
+    fn test_base32() {
+        assert_eq!(Base32::encode(b"f"), "MY");
+        assert_eq!(&Base32::decode("MY").unwrap(), b"f");
+    }
+
+    #[test]
+    fn test_base58() {
+        assert_eq!(Base58btc::encode(b"f"), "2m");
+        assert_eq!(&Base58btc::decode("2m").unwrap(), b"f");
+    }
+
+    #[test]
+    fn test_base64() {
+        assert_eq!(Base64::encode(b"f"), "Zg");
+        assert_eq!(&Base64::decode("Zg").unwrap(), b"f");
+    }
+
+    #[test]
+    fn test_encode_padding() {
+        assert_eq!(Base32::encode(b"foo"), "MZXW6");
+        assert_eq!(Base32pad::encode(b"foo"), "MZXW6===");
+
+        assert_eq!(Base32::encode(b"foob"), "MZXW6YQ");
+        assert_eq!(Base32pad::encode(b"foob"), "MZXW6YQ=");
+
+        assert_eq!(Base32::encode(b"fooba"), "MZXW6YTB");
+        assert_eq!(Base32pad::encode(b"fooba"), "MZXW6YTB");
+
+        assert_eq!(Base32::encode(b"foobar"), "MZXW6YTBOI");
+        assert_eq!(Base32pad::encode(b"foobar"), "MZXW6YTBOI======");
+    }
+
+    #[test]
+    fn test_decode_padding() {
+        assert_eq!(&Base32::decode("MZXW6").unwrap(), b"foo");
+        assert_eq!(&Base32pad::decode("MZXW6===").unwrap(), b"foo");
+
+        assert_eq!(&Base32::decode("MZXW6YQ").unwrap(), b"foob");
+        assert_eq!(&Base32pad::decode("MZXW6YQ=").unwrap(), b"foob");
+
+        assert_eq!(&Base32::decode("MZXW6YTB").unwrap(), b"fooba");
+        assert_eq!(&Base32pad::decode("MZXW6YTB").unwrap(), b"fooba");
+
+        assert_eq!(&Base32::decode("MZXW6YTBOI").unwrap(), b"foobar");
+        assert_eq!(&Base32pad::decode("MZXW6YTBOI=====").unwrap(), b"foobar");
+    }
 }

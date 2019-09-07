@@ -1,96 +1,67 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use multibase::Base;
+use multibase::*;
 use rand::Rng;
 
-fn base32_encode(c: &mut Criterion) {
+fn bench_encode(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
-    let alphabet = Base::Base32.alphabet();
     let data: Vec<u8> = (0..1024).into_iter().map(|_| rng.gen()).collect();
-    
+
     c.bench_function("base_x", |b| {
         b.iter(|| {
-            let result = base_x::encode(alphabet, &data);
+            let result = encode(Base::Base58btc, &data);
             black_box(result);
         })
     });
 
     c.bench_function("base32", |b| {
         b.iter(|| {
-            let alphabet = base32::Alphabet::RFC4648 { padding: false };
-            let result = base32::encode(alphabet, &data);
+            let result = encode(Base::Base32, &data);
+            black_box(result);
+        })
+    });
+
+    c.bench_function("base64", |b| {
+        b.iter(|| {
+            let result = encode(Base::Base64, &data);
             black_box(result);
         })
     });
 }
 
-fn base32_decode(c: &mut Criterion) {
+fn bench_decode(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
-    let alphabet = Base::Base32.alphabet();
-    let data: String = (0..1024).into_iter().map(|_| {
-        let i: usize = rng.gen();
-        let ch: char = alphabet[i % alphabet.len()] as char;
-        ch
-    }).collect();
-    
+    let data: Vec<usize> = (0..1024).into_iter().map(|_| rng.gen()).collect();
+    let base32 = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let base58 = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    let base64 = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut base32_data: String = data.iter().map(|i| base32[i % 31] as char).collect();
+    base32_data.insert(0, Base::Base32.code());
+    let mut base58_data: String = data.iter().map(|i| base58[i % 57] as char).collect();
+    base58_data.insert(0, Base::Base58btc.code());
+    let mut base64_data: String = data.iter().map(|i| base64[i % 64] as char).collect();
+    base64_data.insert(0, Base::Base64.code());
+
     c.bench_function("base_x", |b| {
         b.iter(|| {
-            let result = base_x::decode(alphabet, &data).unwrap();
+            let result = decode(&base58_data).unwrap();
             black_box(result);
         })
     });
 
     c.bench_function("base32", |b| {
         b.iter(|| {
-            let alphabet = base32::Alphabet::RFC4648 { padding: false };
-            let result = base32::decode(alphabet, &data).unwrap();
-            black_box(result);
-        })
-    });
-}
-
-fn base64_encode(c: &mut Criterion) {
-    let mut rng = rand::thread_rng();
-    let alphabet = Base::Base64.alphabet();
-    let data: Vec<u8> = (0..1024).into_iter().map(|_| rng.gen()).collect();
-    
-    c.bench_function("base_x", |b| {
-        b.iter(|| {
-            let result = base_x::encode(alphabet, &data);
+            let result = decode(&base32_data).unwrap();
             black_box(result);
         })
     });
 
     c.bench_function("base64", |b| {
         b.iter(|| {
-            let result = base64::encode(&data);
+            let result = decode(&base64_data).unwrap();
             black_box(result);
         })
     });
 }
 
-fn base64_decode(c: &mut Criterion) {
-    let mut rng = rand::thread_rng();
-    let alphabet = Base::Base64.alphabet();
-    let data: String = (0..1024).into_iter().map(|_| {
-        let i: usize = rng.gen();
-        let ch: char = alphabet[i % alphabet.len()] as char;
-        ch
-    }).collect();
-    
-    c.bench_function("base_x", |b| {
-        b.iter(|| {
-            let result = base_x::decode(alphabet, &data).unwrap();
-            black_box(result);
-        })
-    });
-
-    c.bench_function("base64", |b| {
-        b.iter(|| {
-            let result = base64::decode(&data).unwrap();
-            black_box(result);
-        })
-    });
-}
-
-criterion_group!(benches, base32_encode, base32_decode, base64_encode, base64_decode);
+criterion_group!(benches, bench_encode, bench_decode);
 criterion_main!(benches);

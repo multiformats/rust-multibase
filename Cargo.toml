@@ -4,6 +4,7 @@ version = "0.6.0"
 description = "multibase rust"
 homepage = "https://github.com/multiformats/rust-multibase"
 authors = ["Friedel Ziegelmayer <dignifiedquire@gmail.com>"]
+edition = "2018"
 
 keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
 
@@ -13,3 +14,16 @@ readme = "README.md"
 
 [dependencies]
 base-x = "0.2"
+base32 = "0.4"
+base64 = "0.10"
+
+[dev-dependencies]
+criterion = "0.3"
+rand = "0.7"
+
+[[bench]]
+name = "multibase"
+harness = false
+
+[workspace]
+members = ["cli"]

@@ -1,19 +1,10 @@
 /// ! # multibase
 /// !
 /// ! Implementation of [multibase](https://github.com/multiformats/multibase) in Rust.
-
-extern crate base_x;
-
 mod base;
 mod error;
-mod decodable;
-mod encodable;
-
-pub use decodable::Decodable;
-pub use encodable::Encodable;
 
 pub use base::Base;
-pub use Base::*;
 pub use error::{Error, Result};
 
 /// Decode the string.
@@ -26,9 +17,13 @@ pub use error::{Error, Result};
 /// assert_eq!(decode("zCn8eVZg").unwrap(),
 ///            (Base::Base58btc, b"hello".to_vec()));
 /// ```
-    #[inline]
-pub fn decode<T: Decodable>(data: T) -> Result<(Base, Vec<u8>)> {
-    data.decode()
+pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
+    let input = input.as_ref();
+    let code = input.chars().next().ok_or(Error::InvalidBaseString)?;
+    let base = Base::from_code(code)?;
+    let content = &input[code.len_utf8()..];
+    let decoded = base.decode(content)?;
+    Ok((base, decoded))
 }
 
 /// Encode with the given string
@@ -41,6 +36,9 @@ pub fn decode<T: Decodable>(data: T) -> Result<(Base, Vec<u8>)> {
 /// assert_eq!(encode(Base::Base58btc, b"hello"),
 ///            "zCn8eVZg");
 /// ```
-pub fn encode<T: Encodable>(base: Base, data: T) -> String {
-    data.encode(base)
+pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
+    let input = input.as_ref();
+    let mut encoded = base.encode(input.as_ref());
+    encoded.insert(0, base.code());
+    encoded
 }

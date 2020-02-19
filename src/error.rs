@@ -33,8 +33,8 @@ impl From<base_x::DecodeError> for Error {
     }
 }
 
-impl From<base64::DecodeError> for Error {
-    fn from(_: base64::DecodeError) -> Self {
+impl From<data_encoding::DecodeError> for Error {
+    fn from(_: data_encoding::DecodeError) -> Self {
         Self::InvalidBaseString
     }
 }

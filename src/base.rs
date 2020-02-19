@@ -1,4 +1,5 @@
 use crate::{Error, Result};
+use data_encoding::{BASE32_NOPAD, BASE32, BASE64, BASE64_NOPAD, BASE64URL, BASE64URL_NOPAD};
 
 trait BaseImpl {
     /// Encode a byte slice.
@@ -97,15 +98,11 @@ pub struct Base32UpperNoPad;
 
 impl BaseImpl for Base32UpperNoPad {
     fn encode(input: &[u8]) -> String {
-        base32::encode(base32::Alphabet::RFC4648 { padding: false }, input)
+        BASE32_NOPAD.encode(input)
     }
 
     fn decode(input: &str) -> Result<Vec<u8>> {
-        if let Some(result) = base32::decode(base32::Alphabet::RFC4648 { padding: false }, input) {
-            Ok(result)
-        } else {
-            Err(Error::InvalidBaseString)
-        }
+        Ok(BASE32_NOPAD.decode(input.as_bytes())?)
     }
 }
 
@@ -115,15 +112,11 @@ pub struct Base32UpperPad;
 
 impl BaseImpl for Base32UpperPad {
     fn encode(input: &[u8]) -> String {
-        base32::encode(base32::Alphabet::RFC4648 { padding: true }, input)
+        BASE32.encode(input)
     }
 
     fn decode(input: &str) -> Result<Vec<u8>> {
-        if let Some(result) = base32::decode(base32::Alphabet::RFC4648 { padding: true }, input) {
-            Ok(result)
-        } else {
-            Err(Error::InvalidBaseString)
-        }
+        Ok(BASE32.decode(input.as_bytes())?)
     }
 }
 
@@ -133,12 +126,11 @@ pub struct Base64UpperNoPad;
 
 impl BaseImpl for Base64UpperNoPad {
     fn encode(input: &[u8]) -> String {
-        base64::encode_config(input, base64::STANDARD_NO_PAD)
+        BASE64_NOPAD.encode(input)
     }
 
     fn decode(input: &str) -> Result<Vec<u8>> {
-        let result = base64::decode_config(input, base64::STANDARD_NO_PAD)?;
-        Ok(result)
+        Ok(BASE64_NOPAD.decode(input.as_bytes())?)
     }
 }
 
@@ -148,12 +140,11 @@ pub struct Base64UpperPad;
 
 impl BaseImpl for Base64UpperPad {
     fn encode(input: &[u8]) -> String {
-        base64::encode_config(input, base64::STANDARD)
+        BASE64.encode(input)
     }
 
     fn decode(input: &str) -> Result<Vec<u8>> {
-        let result = base64::decode_config(input, base64::STANDARD)?;
-        Ok(result)
+        Ok(BASE64.decode(input.as_bytes())?)
     }
 }
 
@@ -163,12 +154,11 @@ pub struct Base64UrlUpperNoPad;
 
 impl BaseImpl for Base64UrlUpperNoPad {
     fn encode(input: &[u8]) -> String {
-        base64::encode_config(input, base64::URL_SAFE_NO_PAD)
+        BASE64URL_NOPAD.encode(input)
     }
 
     fn decode(input: &str) -> Result<Vec<u8>> {
-        let result = base64::decode_config(input, base64::URL_SAFE_NO_PAD)?;
-        Ok(result)
+        Ok(BASE64URL_NOPAD.decode(input.as_bytes())?)
     }
 }
 
@@ -178,12 +168,11 @@ pub struct Base64UrlUpperPad;
 
 impl BaseImpl for Base64UrlUpperPad {
     fn encode(input: &[u8]) -> String {
-        base64::encode_config(input, base64::URL_SAFE)
+        BASE64URL.encode(input)
     }
 
     fn decode(input: &str) -> Result<Vec<u8>> {
-        let result = base64::decode_config(input, base64::URL_SAFE)?;
-        Ok(result)
+        Ok(BASE64URL.decode(input.as_bytes())?)
     }
 }
 

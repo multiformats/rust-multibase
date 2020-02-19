@@ -14,8 +14,7 @@ readme = "README.md"
 
 [dependencies]
 base-x = "0.2"
-base32 = "0.4"
-base64 = "0.10"
+data-encoding = "2.1.2"
 
 [dev-dependencies]
 criterion = "0.3"

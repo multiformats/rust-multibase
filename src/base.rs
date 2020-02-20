@@ -1,5 +1,6 @@
 use crate::{Error, Result};
-use data_encoding::{BASE32_NOPAD, BASE32, BASE64, BASE64_NOPAD, BASE64URL, BASE64URL_NOPAD};
+use data_encoding::{BASE32_NOPAD, BASE32, BASE64, BASE64_NOPAD, BASE64URL, BASE64URL_NOPAD, Encoding};
+use data_encoding_macro::{new_encoding, internal_new_encoding};
 
 trait BaseImpl {
     /// Encode a byte slice.
@@ -92,6 +93,15 @@ base_x!(
     b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 );
 
+const BASE32_LOWER_NOPAD: Encoding = new_encoding!{
+    symbols: "abcdefghijklmnopqrstuvwxyz234567",
+};
+
+const BASE32_LOWER: Encoding = new_encoding!{
+    symbols: "abcdefghijklmnopqrstuvwxyz234567",
+    padding: '=',
+};
+
 /// rfc4648 no padding
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Base32UpperNoPad;
@@ -117,6 +127,34 @@ impl BaseImpl for Base32UpperPad {
 
     fn decode(input: &str) -> Result<Vec<u8>> {
         Ok(BASE32.decode(input.as_bytes())?)
+    }
+}
+
+/// rfc4648 (lower case) no padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base32LowerNoPad;
+
+impl BaseImpl for Base32LowerNoPad {
+    fn encode(input: &[u8]) -> String {
+        BASE32_LOWER_NOPAD.encode(input)
+    }
+
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        Ok(BASE32_LOWER_NOPAD.decode(input.as_bytes())?)
+    }
+}
+
+/// rfc4648 (lower case) padding
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Base32LowerPad;
+
+impl BaseImpl for Base32LowerPad {
+    fn encode(input: &[u8]) -> String {
+        BASE32_LOWER.encode(input)
+    }
+
+    fn decode(input: &str) -> Result<Vec<u8>> {
+        Ok(BASE32_LOWER.decode(input.as_bytes())?)
     }
 }
 
@@ -183,7 +221,9 @@ base_enum! {
     'F' => Base16Upper,
     'f' => Base16Lower,
     'B' => Base32UpperNoPad,
+    'b' => Base32LowerNoPad,
     'C' => Base32UpperPad,
+    'c' => Base32LowerPad,
     'Z' => Base58flickr,
     'z' => Base58btc,
     'm' => Base64UpperNoPad,
@@ -215,6 +255,12 @@ mod tests {
     }
 
     #[test]
+    fn test_base32_lower() {
+        assert_eq!(Base32LowerNoPad::encode(b"f"), "my");
+        assert_eq!(&Base32LowerNoPad::decode("my").unwrap(), b"f");
+    }
+
+    #[test]
     fn test_base58() {
         assert_eq!(Base58btc::encode(b"f"), "2m");
         assert_eq!(&Base58btc::decode("2m").unwrap(), b"f");
@@ -227,7 +273,7 @@ mod tests {
     }
 
     #[test]
-    fn test_encode_padding() {
+    fn test_base32_upper_encode_padding() {
         assert_eq!(Base32UpperNoPad::encode(b"foo"), "MZXW6");
         assert_eq!(Base32UpperPad::encode(b"foo"), "MZXW6===");
 
@@ -242,7 +288,22 @@ mod tests {
     }
 
     #[test]
-    fn test_decode_padding() {
+    fn test_base32_lower_encode_padding() {
+        assert_eq!(Base32LowerNoPad::encode(b"foo"), "mzxw6");
+        assert_eq!(Base32LowerPad::encode(b"foo"), "mzxw6===");
+
+        assert_eq!(Base32LowerNoPad::encode(b"foob"), "mzxw6yq");
+        assert_eq!(Base32LowerPad::encode(b"foob"), "mzxw6yq=");
+
+        assert_eq!(Base32LowerNoPad::encode(b"fooba"), "mzxw6ytb");
+        assert_eq!(Base32LowerPad::encode(b"fooba"), "mzxw6ytb");
+
+        assert_eq!(Base32LowerNoPad::encode(b"foobar"), "mzxw6ytboi");
+        assert_eq!(Base32LowerPad::encode(b"foobar"), "mzxw6ytboi======");
+    }
+
+    #[test]
+    fn test_base32_upper_decode_padding() {
         assert_eq!(&Base32UpperNoPad::decode("MZXW6").unwrap(), b"foo");
         assert_eq!(&Base32UpperPad::decode("MZXW6===").unwrap(), b"foo");
 
@@ -253,6 +314,21 @@ mod tests {
         assert_eq!(&Base32UpperPad::decode("MZXW6YTB").unwrap(), b"fooba");
 
         assert_eq!(&Base32UpperNoPad::decode("MZXW6YTBOI").unwrap(), b"foobar");
-        assert_eq!(&Base32UpperPad::decode("MZXW6YTBOI=====").unwrap(), b"foobar");
+        assert_eq!(&Base32UpperPad::decode("MZXW6YTBOI======").unwrap(), b"foobar");
+    }
+
+    #[test]
+    fn test_base32_lower_decode_padding() {
+        assert_eq!(&Base32LowerNoPad::decode("mzxw6").unwrap(), b"foo");
+        assert_eq!(&Base32LowerPad::decode("mzxw6===").unwrap(), b"foo");
+
+        assert_eq!(&Base32LowerNoPad::decode("mzxw6yq").unwrap(), b"foob");
+        assert_eq!(&Base32LowerPad::decode("mzxw6yq=").unwrap(), b"foob");
+
+        assert_eq!(&Base32LowerNoPad::decode("mzxw6ytb").unwrap(), b"fooba");
+        assert_eq!(&Base32LowerPad::decode("mzxw6ytb").unwrap(), b"fooba");
+
+        assert_eq!(&Base32LowerNoPad::decode("mzxw6ytboi").unwrap(), b"foobar");
+        assert_eq!(&Base32LowerPad::decode("mzxw6ytboi======").unwrap(), b"foobar");
     }
 }

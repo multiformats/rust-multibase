@@ -15,6 +15,7 @@ readme = "README.md"
 [dependencies]
 base-x = "0.2"
 data-encoding = "2.1.2"
+data-encoding-macro = "0.1.7"
 
 [dev-dependencies]
 criterion = "0.3"

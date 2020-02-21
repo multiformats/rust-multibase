@@ -1,44 +1,79 @@
-/// ! # multibase
-/// !
-/// ! Implementation of [multibase](https://github.com/multiformats/multibase) in Rust.
+//! # multibase
+//!
+//! Implementation of [multibase](https://github.com/multiformats/multibase) in Rust.
+
+#![deny(missing_docs)]
+
 mod base;
+mod encoding;
 mod error;
+mod impls;
 
-pub use base::Base;
-pub use error::{Error, Result};
+pub use self::base::Base;
+pub use self::error::{Error, Result};
+use self::impls::{Base58Btc, BaseCodec};
 
-/// Decode the string.
+/// Decode the base string.
 ///
 /// # Examples
 ///
 /// ```
 /// use multibase::{Base, decode};
 ///
-/// assert_eq!(decode("zCn8eVZg").unwrap(),
-///            (Base::Base58btc, b"hello".to_vec()));
+/// assert_eq!(
+///     decode("zCn8eVZg").unwrap(),
+///     (Base::Base58Btc, b"hello".to_vec())
+/// );
 /// ```
 pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
     let input = input.as_ref();
     let code = input.chars().next().ok_or(Error::InvalidBaseString)?;
     let base = Base::from_code(code)?;
-    let content = &input[code.len_utf8()..];
-    let decoded = base.decode(content)?;
+    let decoded = base.decode(&input[code.len_utf8()..])?;
     Ok((base, decoded))
 }
 
-/// Encode with the given string
+/// Encode with the given byte slice to base string.
 ///
 /// # Examples
 ///
 /// ```
 /// use multibase::{Base, encode};
 ///
-/// assert_eq!(encode(Base::Base58btc, b"hello"),
-///            "zCn8eVZg");
+/// assert_eq!(encode(Base::Base58Btc, b"hello"), "zCn8eVZg");
 /// ```
 pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
     let input = input.as_ref();
     let mut encoded = base.encode(input.as_ref());
     encoded.insert(0, base.code());
     encoded
+}
+
+/// Decode the base58btc string for CIDv0 specially.
+///
+/// # Examples
+///
+/// ```
+/// use multibase::decode_base58btc;
+///
+/// assert_eq!(
+///     decode_base58btc("Cn8eVZg").unwrap(),
+///     b"hello".to_vec(),
+/// );
+/// ```
+pub fn decode_base58btc<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+    Base58Btc::decode(input)
+}
+
+/// Encode the given byte slice to base58btc string for CIDv0 specially.
+///
+/// # Examples
+///
+/// ```
+/// use multibase::encode_base58btc;
+///
+/// assert_eq!(encode_base58btc(b"hello"), "Cn8eVZg");
+/// ```
+pub fn encode_base58btc<I: AsRef<[u8]>>(input: I) -> String {
+    Base58Btc::encode(input)
 }

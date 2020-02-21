@@ -1,17 +1,16 @@
 [package]
 name = "multibase-cli"
 version = "0.1.0"
-authors = ["David Craven <david@craven.ch>"]
+authors = [
+    "David Craven <david@craven.ch>",
+    "Qinxuan Chen <koushiro.cqx@gmail.com>",
+]
 edition = "2018"
 
 [dependencies]
-clap = "2.33.0"
-env_logger = "0.6.2"
-exitfailure = "0.5.1"
-failure = "0.1.5"
-log = "0.4.8"
+anyhow = "1.0"
 multibase = { path = ".." }
-structopt = "0.3.0"
+structopt = "0.3"
 
 [[bin]]
 name = "multibase"

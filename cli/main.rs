@@ -1,3 +1,6 @@
+use std::fmt;
+use std::str::FromStr;
+
 use anyhow::{anyhow, Error, Result};
 use multibase::Base;
 use structopt::StructOpt;
@@ -29,6 +32,7 @@ enum Mode {
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
     let opts = Opts::from_args();
     match opts.mode {
         Mode::Encode { base, input } => encode(base, input.as_bytes()),
@@ -39,7 +43,7 @@ fn main() -> Result<()> {
 #[derive(Debug)]
 struct StrBase(Base);
 
-impl std::fmt::Display for StrBase {
+impl fmt::Display for StrBase {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let base_str = match self.0 {
             Base::Identity => "identity",
@@ -68,7 +72,7 @@ impl std::fmt::Display for StrBase {
     }
 }
 
-impl std::str::FromStr for StrBase {
+impl FromStr for StrBase {
     type Err = Error;
 
     fn from_str(base_str: &str) -> Result<Self, Self::Err> {
@@ -107,14 +111,14 @@ impl From<StrBase> for Base {
 }
 
 fn encode(base: StrBase, input: &[u8]) -> Result<()> {
-    println!("Encode {:?} with {}", input, base);
+    log::debug!("Encode {:?} with {}", input, base);
     let result = multibase::encode(base.into(), input);
     println!("Result: {}", result);
     Ok(())
 }
 
 fn decode(input: &str) -> Result<()> {
-    println!("Decode {:?}", input);
+    log::debug!("Decode {:?}", input);
     let (base, result) = multibase::decode(input)?;
     println!("Result: {}, {:?}", StrBase(base), result);
     Ok(())

@@ -1,3 +1,5 @@
+use std::{error, fmt};
+
 /// Type alias to use this library's [`Error`] type in a `Result`.
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -10,8 +12,8 @@ pub enum Error {
     InvalidBaseString,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::UnknownBase(code) => write!(f, "Unknown base code: {}", code),
             Error::InvalidBaseString => write!(f, "Invalid base string"),
@@ -19,16 +21,16 @@ impl std::fmt::Display for Error {
     }
 }
 
-impl std::error::Error for Error {}
+impl error::Error for Error {}
 
 impl From<base_x::DecodeError> for Error {
     fn from(_: base_x::DecodeError) -> Self {
-        Error::InvalidBaseString
+        Self::InvalidBaseString
     }
 }
 
 impl From<data_encoding::DecodeError> for Error {
     fn from(_: data_encoding::DecodeError) -> Self {
-        Error::InvalidBaseString
+        Self::InvalidBaseString
     }
 }

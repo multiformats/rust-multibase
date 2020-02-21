@@ -9,6 +9,8 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0"
+env_logger = "0.7"
+log = "0.4"
 multibase = { path = ".." }
 structopt = "0.3"
 

@@ -11,7 +11,6 @@ mod impls;
 
 pub use self::base::Base;
 pub use self::error::{Error, Result};
-use self::impls::{Base58Btc, BaseCodec};
 
 /// Decode the base string.
 ///
@@ -47,33 +46,4 @@ pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
     let mut encoded = base.encode(input.as_ref());
     encoded.insert(0, base.code());
     encoded
-}
-
-/// Decode the base58btc string for CIDv0 specially.
-///
-/// # Examples
-///
-/// ```
-/// use multibase::decode_base58btc;
-///
-/// assert_eq!(
-///     decode_base58btc("Cn8eVZg").unwrap(),
-///     b"hello".to_vec(),
-/// );
-/// ```
-pub fn decode_base58btc<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-    Base58Btc::decode(input)
-}
-
-/// Encode the given byte slice to base58btc string for CIDv0 specially.
-///
-/// # Examples
-///
-/// ```
-/// use multibase::encode_base58btc;
-///
-/// assert_eq!(encode_base58btc(b"hello"), "Cn8eVZg");
-/// ```
-pub fn encode_base58btc<I: AsRef<[u8]>>(input: I) -> String {
-    Base58Btc::encode(input)
 }

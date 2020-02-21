@@ -75,7 +75,6 @@ fn test_all() {
 #[test]
 fn preserves_leading_zeroes() {
     let input = b"\x00\x00\x00yes mani !";
-    println!("{:x?}", input.to_vec());
     let test_cases = vec![
         (Identity, "\x00\x00\x00\x00yes mani !"),
         (Base2, "000000000000000000000000001111001011001010111001100100000011011010110000101101110011010010010000000100001"),

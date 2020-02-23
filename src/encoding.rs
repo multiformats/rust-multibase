@@ -1,22 +1,15 @@
-use data_encoding::{Encoding, Specification};
-use lazy_static::lazy_static;
-
-fn make_encoding(symbols: &str, padding: Option<char>) -> Encoding {
-    let mut spec = Specification::new();
-    spec.symbols.push_str(symbols);
-    spec.padding = padding;
-    spec.encoding().unwrap()
-}
+use data_encoding::Encoding;
+use data_encoding_macro::{internal_new_encoding, new_encoding};
 
 // Base2 (alphabet: 01)
-lazy_static! {
-    pub static ref BASE2: Encoding = make_encoding("01", None);
-}
+pub const BASE2: Encoding = new_encoding! {
+    symbols: "01",
+};
 
 // Base8 (alphabet: 01234567)
-lazy_static! {
-    pub static ref BASE8: Encoding = make_encoding("01234567", None);
-}
+pub const BASE8: Encoding = new_encoding! {
+    symbols: "01234567",
+};
 
 /// Base10 (alphabet: 0123456789)
 pub const BASE10: &str = "0123456789";
@@ -28,45 +21,43 @@ pub const BASE16_LOWER: Encoding = data_encoding::HEXLOWER;
 pub const BASE16_UPPER: Encoding = data_encoding::HEXUPPER;
 
 // Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
-lazy_static! {
-    pub static ref BASE32_NOPAD_LOWER: Encoding =
-        make_encoding("abcdefghijklmnopqrstuvwxyz234567", None);
-}
+pub const BASE32_NOPAD_LOWER: Encoding = new_encoding! {
+    symbols: "abcdefghijklmnopqrstuvwxyz234567",
+};
 
 // Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
 pub const BASE32_NOPAD_UPPER: Encoding = data_encoding::BASE32_NOPAD;
 
 // Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
-lazy_static! {
-    pub static ref BASE32_PAD_LOWER: Encoding =
-        make_encoding("abcdefghijklmnopqrstuvwxyz234567", Some('='));
-}
+pub const BASE32_PAD_LOWER: Encoding = new_encoding! {
+    symbols: "abcdefghijklmnopqrstuvwxyz234567",
+    padding: '=',
+};
 
 // Base32, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
 pub const BASE32_PAD_UPPER: Encoding = data_encoding::BASE32;
 
 // Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
-lazy_static! {
-    pub static ref BASE32HEX_NOPAD_LOWER: Encoding =
-        make_encoding("0123456789abcdefghijklmnopqrstuv", None);
-}
+pub const BASE32HEX_NOPAD_LOWER: Encoding = new_encoding! {
+    symbols: "0123456789abcdefghijklmnopqrstuv",
+};
 
 // Base32hex, rfc4648 no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
 pub const BASE32HEX_NOPAD_UPPER: Encoding = data_encoding::BASE32HEX_NOPAD;
 
 // Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
-lazy_static! {
-    pub static ref BASE32HEX_PAD_LOWER: Encoding =
-        make_encoding("0123456789abcdefghijklmnopqrstuv", Some('='));
-}
+pub const BASE32HEX_PAD_LOWER: Encoding = new_encoding! {
+    symbols: "0123456789abcdefghijklmnopqrstuv",
+    padding: '=',
+};
 
 /// Base32hex, rfc4648 with padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
 pub const BASE32HEX_PAD_UPPER: Encoding = data_encoding::BASE32HEX;
 
 // z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
-lazy_static! {
-    pub static ref BASE32Z: Encoding = make_encoding("ybndrfg8ejkmcpqxot1uwisza345h769", None);
-}
+pub const BASE32Z: Encoding = new_encoding! {
+    symbols: "ybndrfg8ejkmcpqxot1uwisza345h769",
+};
 
 // Base58 Flickr's alphabet for creating short urls from photo ids.
 pub const BASE58_FLICKR: &str = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";

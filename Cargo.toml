@@ -11,8 +11,8 @@ keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
 
 [dependencies]
 base-x = "0.2"
-data-encoding = "2.1"
-lazy_static = "1.4"
+data-encoding = "2.2"
+data-encoding-macro = "0.1.8"
 
 [dev-dependencies]
 criterion = "0.3"

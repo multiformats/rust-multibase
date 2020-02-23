@@ -1,149 +1,106 @@
-use multibase::Base::*;
-use multibase::{decode, encode, Base, Error};
+use multibase::{decode, encode, Base, Base::*};
 
 #[test]
 fn test_bases_code() {
+    assert_eq!(Identity.code(), '\x00');
     assert_eq!(Base2.code(), '0');
 }
 
 #[test]
-fn test_round_trip() {
-    let slices: &[&[u8]] = &[
-        b"helloworld",
-        b"we all want decentralization",
-        b"zdj7WfBb6j58iSJuAzDcSZgy2SxFhdpJ4H87uvMpfyN6hRGyH",
-    ];
-
-    for s in slices {
-        assert_eq!(
-            decode(encode(Base58btc, s)).unwrap(),
-            (Base58btc, s.to_vec())
-        );
-    }
-
-    let val = vec![1, 2, 3, 98, 255, 255, 255];
-    assert_eq!(decode(encode(Base64UrlUpperNoPad, &val)).unwrap(), (Base64UrlUpperNoPad, val))
-}
-
-#[test]
 fn test_bases_from_code() {
+    assert_eq!(Base::from_code('\x00').unwrap(), Identity);
     assert_eq!(Base::from_code('0').unwrap(), Base2);
 }
 
 #[test]
-fn test_encode() {
-    let id = b"Decentralize everything!!";
+fn test_round_trip() {
+    let test_cases: &[&str] = &[
+        "helloworld",
+        "we all want decentralization",
+        "zdj7WfBb6j58iSJuAzDcSZgy2SxFhdpJ4H87uvMpfyN6hRGyH",
+    ];
 
-    assert_eq!(
-        encode(Base16Lower, id),
-        "f446563656e7472616c697a652065766572797468696e672121"
-    );
+    for case in test_cases {
+        let encoded = encode(Base58Btc, case);
+        let decoded = decode(encoded).unwrap();
+        assert_eq!(decoded, (Base58Btc, case.as_bytes().to_vec()))
+    }
+}
 
-    assert_eq!(
-        encode(Base16Lower, String::from_utf8(id.to_vec()).unwrap()),
-        "f446563656e7472616c697a652065766572797468696e672121"
-    );
+#[test]
+fn test_all() {
+    let input = b"Decentralize everything!!!";
+    let test_cases = vec![
+        (Identity, "\0Decentralize everything!!!"),
+        (Base2, "00100010001100101011000110110010101101110011101000111001001100001011011000110100101111010011001010010000001100101011101100110010101110010011110010111010001101000011010010110111001100111001000010010000100100001"),
+        (Base8, "72106254331267164344605543227514510062566312711713506415133463441102204"),
+        (Base10, "9109908211473026300072608683330054595334719246534349983154512161"),
+        (
+            Base16Lower,
+            "f446563656e7472616c697a652065766572797468696e67212121",
+        ),
+        (
+            Base16Upper,
+            "F446563656E7472616C697A652065766572797468696E67212121",
+        ),
+        (Base32Lower, "birswgzloorzgc3djpjssazlwmvzhs5dinfxgoijbee"),
+        (Base32Upper, "BIRSWGZLOORZGC3DJPJSSAZLWMVZHS5DINFXGOIJBEE"),
+        (
+            Base32PadLower,
+            "cirswgzloorzgc3djpjssazlwmvzhs5dinfxgoijbee======",
+        ),
+        (
+            Base32PadUpper,
+            "CIRSWGZLOORZGC3DJPJSSAZLWMVZHS5DINFXGOIJBEE======",
+        ),
+        (Base32HexLower, "v8him6pbeehp62r39f9ii0pbmclp7it38d5n6e89144"),
+        (Base32HexUpper, "V8HIM6PBEEHP62R39F9II0PBMCLP7IT38D5N6E89144"),
+        (Base32HexPadLower, "t8him6pbeehp62r39f9ii0pbmclp7it38d5n6e89144======"),
+        (Base32HexPadUpper, "T8HIM6PBEEHP62R39F9II0PBMCLP7IT38D5N6E89144======"),
+        (Base32Z, "het1sg3mqqt3gn5djxj11y3msci3817depfzgqejbrr"),
+        (Base58Flickr, "Z36tpRGiQ9Endr7dHahm9xwQdhmoER4emaRVT"),
+        (Base58Btc, "z36UQrhJq9fNDS7DiAHM9YXqDHMPfr4EMArvt"),
+        (Base64, "mRGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE"),
+        (Base64Pad, "MRGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE="),
+        (Base64Url, "uRGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE"),
+        (Base64UrlPad, "URGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE="),
+    ];
 
-    assert_eq!(
-        encode(Base16Lower, id.to_vec()),
-        "f446563656e7472616c697a652065766572797468696e672121"
-    );
-
-    assert_eq!(encode(Base58btc, id), "zUXE7GvtEk8XTXs1GF8HSGbVA9FCX9SEBPe");
-
-    let id2 = b"yes mani !";
-
-    assert_eq!(
-        encode(Base2, id2),
-        "01111001011001010111001100100000011011010110000101101110011010010010000000100\
-         001"
-    );
-    assert_eq!(encode(Base8, id2), "7171312714403326055632220041");
-    assert_eq!(encode(Base10, id2), "9573277761329450583662625");
-    assert_eq!(encode(Base16Lower, id2), "f796573206d616e692021");
-    assert_eq!(encode(Base58flickr, id2), "Z7Pznk19XTTzBtx");
-    assert_eq!(encode(Base58btc, id2), "z7paNL19xttacUY");
+    for (base, output) in test_cases {
+        assert_eq!(encode(base, input), output);
+        assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
+    }
 }
 
 #[test]
 fn preserves_leading_zeroes() {
-    let id2 = b"\x00\x00\x00yes mani !";
+    let input = b"\x00\x00\x00yes mani !";
+    let test_cases = vec![
+        (Identity, "\x00\x00\x00\x00yes mani !"),
+        (Base2, "000000000000000000000000001111001011001010111001100100000011011010110000101101110011010010010000000100001"),
+        (Base8, "700000000362625631006654133464440102"),
+        (Base10, "9000573277761329450583662625"),
+        (Base16Lower, "f000000796573206d616e692021"),
+        (Base16Upper, "F000000796573206D616E692021"),
+        (Base32Lower, "baaaaa6lfomqg2yloneqcc"),
+        (Base32Upper, "BAAAAA6LFOMQG2YLONEQCC"),
+        (Base32PadLower, "caaaaa6lfomqg2yloneqcc==="),
+        (Base32PadUpper, "CAAAAA6LFOMQG2YLONEQCC==="),
+        (Base32HexLower, "v00000ub5ecg6qobed4g22"),
+        (Base32HexUpper, "V00000UB5ECG6QOBED4G22"),
+        (Base32HexPadLower, "t00000ub5ecg6qobed4g22==="),
+        (Base32HexPadUpper, "T00000UB5ECG6QOBED4G22==="),
+        (Base32Z, "hyyyyy6mfqcog4amqpronn"),
+        (Base58Flickr, "Z1117Pznk19XTTzBtx"),
+        (Base58Btc, "z1117paNL19xttacUY"),
+        (Base64, "mAAAAeWVzIG1hbmkgIQ"),
+        (Base64Pad, "MAAAAeWVzIG1hbmkgIQ=="),
+        (Base64Url, "uAAAAeWVzIG1hbmkgIQ"),
+        (Base64UrlPad, "UAAAAeWVzIG1hbmkgIQ=="),
+    ];
 
-    assert_eq!(encode(Base2, id2), "00001111001011001010111001100100000011011010110000101101110011010010010000000100001");
-    assert_eq!(encode(Base8, id2), "7000171312714403326055632220041");
-    assert_eq!(encode(Base10, id2), "9000573277761329450583662625");
-    assert_eq!(encode(Base16Upper, id2), "F000796573206D616E692021");
-    assert_eq!(encode(Base16Lower, id2), "f000796573206d616e692021");
-    assert_eq!(encode(Base32UpperNoPad, id2), "BAAAAA6LFOMQG2YLONEQCC");
-    assert_eq!(encode(Base32UpperPad, id2),   "CAAAAA6LFOMQG2YLONEQCC===");
-    assert_eq!(encode(Base58flickr, id2), "Z1117Pznk19XTTzBtx");
-    assert_eq!(encode(Base58btc, id2),    "z1117paNL19xttacUY");
-    assert_eq!(encode(Base64UpperNoPad, id2),    "mAAAAeWVzIG1hbmkgIQ");
-    assert_eq!(encode(Base64UpperPad, id2),      "MAAAAeWVzIG1hbmkgIQ==");
-    assert_eq!(encode(Base64UrlUpperNoPad, id2), "uAAAAeWVzIG1hbmkgIQ");
-    assert_eq!(encode(Base64UrlUpperPad, id2),   "UAAAAeWVzIG1hbmkgIQ==");
-
-    let (base, decoded) = decode("z1117paNL19xttacUY").unwrap();
-    assert_eq!(base, Base58btc);
-    assert_eq!(&decoded, id2)
-}
-
-
-#[test]
-fn test_decode() {
-    let id = b"Decentralize everything!!";
-
-    assert_eq!(
-        decode("f446563656e7472616c697a652065766572797468696e672121").unwrap(),
-        (Base16Lower, id.to_vec())
-    );
-
-    assert_eq!(
-        decode("f446563656e7472616c697a652065766572797468696e672121".to_string()).unwrap(),
-        (Base16Lower, id.to_vec())
-    );
-
-    assert_eq!(
-        decode("zUXE7GvtEk8XTXs1GF8HSGbVA9FCX9SEBPe").unwrap(),
-        (Base58btc, id.to_vec())
-    );
-
-    let id2 = b"yes mani !";
-
-    assert_eq!(
-        decode(
-            "011110010110010101110011001000000110110101100001011011100110100100100\
-             00000100001"
-        )
-        .unwrap(),
-        (Base2, id2.to_vec())
-    );
-    assert_eq!(
-        decode("7171312714403326055632220041").unwrap(),
-        (Base8, id2.to_vec())
-    );
-    assert_eq!(
-        decode("9573277761329450583662625").unwrap(),
-        (Base10, id2.to_vec())
-    );
-    assert_eq!(
-        decode("f796573206d616e692021").unwrap(),
-        (Base16Lower, id2.to_vec())
-    );
-    assert_eq!(
-        decode("Z7Pznk19XTTzBtx").unwrap(),
-        (Base58flickr, id2.to_vec())
-    );
-    assert_eq!(
-        decode("z7paNL19xttacUY").unwrap(),
-        (Base58btc, id2.to_vec())
-    );
-
-    assert_eq!(decode("mZg").unwrap(), (Base64UpperNoPad, b"f".to_vec()));
-    assert_eq!(decode("MZg==").unwrap(), (Base64UpperPad, b"f".to_vec()));
-    assert_eq!(decode("uZg").unwrap(), (Base64UrlUpperNoPad, b"f".to_vec()));
-    assert_eq!(decode("UZg==").unwrap(), (Base64UrlUpperPad, b"f".to_vec()));
-
-    assert_eq!(decode("L1111"), Err(Error::UnknownBase));
-    assert_eq!(decode("z7pa_L19xttacUY"), Err(Error::InvalidBaseString));
+    for (base, output) in test_cases {
+        assert_eq!(encode(base, input), output);
+        assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
+    }
 }

@@ -1,21 +1,18 @@
 [package]
 name = "multibase"
 version = "0.7.0"
-description = "multibase rust"
-homepage = "https://github.com/multiformats/rust-multibase"
 authors = ["Friedel Ziegelmayer <dignifiedquire@gmail.com>"]
 edition = "2018"
-
-keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
-
 license = "MIT"
-
 readme = "README.md"
+description = "multibase in rust"
+homepage = "https://github.com/multiformats/rust-multibase"
+keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
 
 [dependencies]
 base-x = "0.2"
-data-encoding = "2.1.2"
-data-encoding-macro = "0.1.7"
+data-encoding = "2.2"
+data-encoding-macro = "0.1.8"
 
 [dev-dependencies]
 criterion = "0.3"

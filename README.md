@@ -10,6 +10,7 @@
 [![Crates.io](https://img.shields.io/crates/v/multibase?style=flat-square)](https://crates.io/crates/multibase)
 [![Documentation](https://docs.rs/multibase/badge.svg?style=flat-square)](https://docs.rs/multibase)
 [![Dependency Status](https://deps.rs/repo/github/multiformats/rust-multibase/status.svg)](https://deps.rs/repo/github/multiformats/rust-multibase)
+[![Coverage Status]( https://img.shields.io/codecov/c/github/multiformats/rust-multibase?style=flat-square)](https://codecov.io/gh/multiformats/rust-multibase)
 
 > [multibase](https://github.com/multiformats/multibase) implementation in Rust.
 

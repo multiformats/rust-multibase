@@ -4,7 +4,7 @@ name: build
 
 jobs:
   build:
-    name: Lint and Test
+    name: Lints and Test
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
@@ -39,3 +39,28 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          version: '0.11.0'
+          args: '-- --test-threads 1'
+
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}

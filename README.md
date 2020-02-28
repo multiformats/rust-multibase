@@ -3,10 +3,13 @@
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
 [![](https://img.shields.io/badge/project-multiformats-blue.svg?style=flat-square)](https://github.com/multiformats/multiformats)
 [![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](https://webchat.freenode.net/?channels=%23ipfs)
-[![Travis CI](https://img.shields.io/travis/multiformats/rust-multibase.svg?style=flat-square&branch=master)](https://travis-ci.org/multiformats/rust-multibase)
-[![](https://img.shields.io/badge/rust-docs-blue.svg?style=flat-square)](https://multiformats.github.io/rust-multibase/multibase/index.html)
-[![crates.io](https://img.shields.io/badge/crates.io-v0.4.0-orange.svg?style=flat-square )](https://crates.io/crates/multibase)
 [![](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+
+[![Build Status](https://github.com/multiformats/rust-multibase/workflows/build/badge.svg)](https://github.com/https://github.com/multiformats/rust-multibase/actions)
+[![License](https://img.shields.io/crates/l/multibase?style=flat-square)](LICENSE)
+[![Crates.io](https://img.shields.io/crates/v/multibase?style=flat-square)](https://crates.io/crates/multibase)
+[![Documentation](https://docs.rs/multibase/badge.svg?style=flat-square)](https://docs.rs/multibase)
+[![Dependency Status](https://deps.rs/repo/github/multiformats/rust-multibase/status.svg)](https://deps.rs/repo/github/multiformats/rust-multibase)
 
 > [multibase](https://github.com/multiformats/multibase) implementation in Rust.
 
@@ -24,22 +27,23 @@ First add this to your `Cargo.toml`
 
 ```toml
 [dependencies]
-multibase = "*"
+multibase = "0.8"
 ```
 
 Then run `cargo build`.
 
 ## Usage
-base32 and base64 are orders of magnitude faster due to byte alignment. Don't
-be surprised if using a different base turns into a performance bottleneck. You
-were warned!
 
 ```rust
 use multibase::Base;
 
-let base64 = encode(Base::Base64, b"hello world");
-let (base, data) = decode(base64);
+let base64 = multibase::encode(Base::Base64, b"hello world");
+let (base, data) = multibase::decode(base64);
 ```
+
+**Note**: `base32` and `base64` are orders of magnitude faster due to byte alignment. Don't
+be surprised if using a different base turns into a performance bottleneck. You
+were warned!
 
 ## Maintainers
 

@@ -130,3 +130,25 @@ fn preserves_two_leading_zeroes() {
     ];
     encode_decode_assert(input, test_cases);
 }
+
+#[test]
+fn case_insensitivity() {
+    let input = b"hello world";
+    let test_cases = vec![
+        (Base16Lower, "f68656c6c6f20776F726C64"),
+        (Base16Upper, "F68656c6c6f20776F726C64"),
+        (Base32Lower, "bnbswy3dpeB3W64TMMQ"),
+        (Base32Upper, "Bnbswy3dpeB3W64TMMQ"),
+        (Base32HexLower, "vd1imor3f41RMUSJCCG"),
+        (Base32HexUpper, "Vd1imor3f41RMUSJCCG"),
+        (Base32PadLower, "cnbswy3dpeB3W64TMMQ======"),
+        (Base32PadUpper, "Cnbswy3dpeB3W64TMMQ======"),
+        (Base32HexPadLower, "td1imor3f41RMUSJCCG======"),
+        (Base32HexPadUpper, "Td1imor3f41RMUSJCCG======"),
+        //(Base36Lower, "kfUvrsIvVnfRbjWaJo"),
+        //(Base36Upper, "KfUVrSIVVnFRbJWAJo"),
+    ];
+    for (base, output) in test_cases {
+        assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
+    }
+}

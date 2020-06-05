@@ -219,6 +219,38 @@ impl BaseCodec for Base32Z {
     }
 }
 
+/// Base36, [0-9a-z] no padding (alphabet: abcdefghijklmnopqrstuvwxyz0123456789).
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub(crate) struct Base36Lower;
+
+impl BaseCodec for Base36Lower {
+    fn encode<I: AsRef<[u8]>>(input: I) -> String {
+        base_x::encode(encoding::BASE36_LOWER, input.as_ref())
+    }
+
+    fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+        // The input is case insensitive, hence lowercase it
+        let lowercased = input.as_ref().to_ascii_lowercase();
+        Ok(base_x::decode(encoding::BASE36_LOWER, &lowercased)?)
+    }
+}
+
+/// Base36, [0-9A-Z] no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789).
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub(crate) struct Base36Upper;
+
+impl BaseCodec for Base36Upper {
+    fn encode<I: AsRef<[u8]>>(input: I) -> String {
+        base_x::encode(encoding::BASE36_UPPER, input.as_ref())
+    }
+
+    fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+        // The input is case insensitive, hence uppercase it
+        let uppercased = input.as_ref().to_ascii_uppercase();
+        Ok(base_x::decode(encoding::BASE36_UPPER, &uppercased)?)
+    }
+}
+
 /// Base58 flicker (alphabet: 123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ).
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Base58Flickr;

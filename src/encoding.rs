@@ -85,6 +85,12 @@ pub const BASE32Z: Encoding = new_encoding! {
     symbols: "ybndrfg8ejkmcpqxot1uwisza345h769",
 };
 
+/// Base36, [0-9a-z] no padding (alphabet: 0123456789abcdefghijklmnopqrstuvwxyz).
+pub const BASE36_LOWER: &str = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+/// Base36, [0-9A-Z] no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ).
+pub const BASE36_UPPER: &str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 // Base58 Flickr's alphabet for creating short urls from photo ids.
 pub const BASE58_FLICKR: &str = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 

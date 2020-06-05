@@ -15,44 +15,70 @@ pub const BASE8: Encoding = new_encoding! {
 pub const BASE10: &str = "0123456789";
 
 // Base16 lower hexadecimal (alphabet: 0123456789abcdef)
-pub const BASE16_LOWER: Encoding = data_encoding::HEXLOWER;
+pub const BASE16_LOWER: Encoding = data_encoding::HEXLOWER_PERMISSIVE;
 
 // Base16 upper hexadecimal (alphabet: 0123456789ABCDEF).
-pub const BASE16_UPPER: Encoding = data_encoding::HEXUPPER;
+pub const BASE16_UPPER: Encoding = data_encoding::HEXUPPER_PERMISSIVE;
 
 // Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
 pub const BASE32_NOPAD_LOWER: Encoding = new_encoding! {
     symbols: "abcdefghijklmnopqrstuvwxyz234567",
+    translate_from: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    translate_to: "abcdefghijklmnopqrstuvwxyz",
 };
 
 // Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
-pub const BASE32_NOPAD_UPPER: Encoding = data_encoding::BASE32_NOPAD;
+pub const BASE32_NOPAD_UPPER: Encoding = new_encoding! {
+    symbols: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+    translate_from: "abcdefghijklmnopqrstuvwxyz",
+    translate_to: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+};
 
 // Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
 pub const BASE32_PAD_LOWER: Encoding = new_encoding! {
     symbols: "abcdefghijklmnopqrstuvwxyz234567",
+    translate_from: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    translate_to: "abcdefghijklmnopqrstuvwxyz",
     padding: '=',
 };
 
 // Base32, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
-pub const BASE32_PAD_UPPER: Encoding = data_encoding::BASE32;
+pub const BASE32_PAD_UPPER: Encoding = new_encoding! {
+    symbols: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+    translate_from: "abcdefghijklmnopqrstuvwxyz",
+    translate_to: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    padding: '=',
+};
 
 // Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
 pub const BASE32HEX_NOPAD_LOWER: Encoding = new_encoding! {
     symbols: "0123456789abcdefghijklmnopqrstuv",
+    translate_from: "ABCDEFGHIJKLMNOPQRSTUV",
+    translate_to: "abcdefghijklmnopqrstuv",
 };
 
 // Base32hex, rfc4648 no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
-pub const BASE32HEX_NOPAD_UPPER: Encoding = data_encoding::BASE32HEX_NOPAD;
+pub const BASE32HEX_NOPAD_UPPER: Encoding = new_encoding! {
+    symbols: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
+    translate_from: "abcdefghijklmnopqrstuv",
+    translate_to: "ABCDEFGHIJKLMNOPQRSTUV",
+};
 
 // Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
 pub const BASE32HEX_PAD_LOWER: Encoding = new_encoding! {
     symbols: "0123456789abcdefghijklmnopqrstuv",
+    translate_from: "ABCDEFGHIJKLMNOPQRSTUV",
+    translate_to: "abcdefghijklmnopqrstuv",
     padding: '=',
 };
 
 /// Base32hex, rfc4648 with padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
-pub const BASE32HEX_PAD_UPPER: Encoding = data_encoding::BASE32HEX;
+pub const BASE32HEX_PAD_UPPER: Encoding = new_encoding! {
+    symbols: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
+    translate_from: "abcdefghijklmnopqrstuv",
+    translate_to: "ABCDEFGHIJKLMNOPQRSTUV",
+    padding: '=',
+};
 
 // z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
 pub const BASE32Z: Encoding = new_encoding! {

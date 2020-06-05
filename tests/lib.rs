@@ -1,5 +1,12 @@
 use multibase::{decode, encode, Base, Base::*};
 
+fn encode_decode_assert(input: &[u8], test_cases: Vec<(Base, &str)>) {
+    for (base, output) in test_cases {
+        assert_eq!(encode(base, input), output);
+        assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
+    }
+}
+
 #[test]
 fn test_bases_code() {
     assert_eq!(Identity.code(), '\x00');
@@ -28,79 +35,98 @@ fn test_round_trip() {
 }
 
 #[test]
-fn test_all() {
-    let input = b"Decentralize everything!!!";
+fn test_basic() {
+    let input = b"yes mani !";
     let test_cases = vec![
-        (Identity, "\0Decentralize everything!!!"),
-        (Base2, "00100010001100101011000110110010101101110011101000111001001100001011011000110100101111010011001010010000001100101011101100110010101110010011110010111010001101000011010010110111001100111001000010010000100100001"),
-        (Base8, "72106254331267164344605543227514510062566312711713506415133463441102204"),
-        (Base10, "9109908211473026300072608683330054595334719246534349983154512161"),
+        (Identity, "\x00yes mani !"),
         (
-            Base16Lower,
-            "f446563656e7472616c697a652065766572797468696e67212121",
+            Base2,
+            "001111001011001010111001100100000011011010110000101101110011010010010000000100001",
         ),
-        (
-            Base16Upper,
-            "F446563656E7472616C697A652065766572797468696E67212121",
-        ),
-        (Base32Lower, "birswgzloorzgc3djpjssazlwmvzhs5dinfxgoijbee"),
-        (Base32Upper, "BIRSWGZLOORZGC3DJPJSSAZLWMVZHS5DINFXGOIJBEE"),
-        (
-            Base32PadLower,
-            "cirswgzloorzgc3djpjssazlwmvzhs5dinfxgoijbee======",
-        ),
-        (
-            Base32PadUpper,
-            "CIRSWGZLOORZGC3DJPJSSAZLWMVZHS5DINFXGOIJBEE======",
-        ),
-        (Base32HexLower, "v8him6pbeehp62r39f9ii0pbmclp7it38d5n6e89144"),
-        (Base32HexUpper, "V8HIM6PBEEHP62R39F9II0PBMCLP7IT38D5N6E89144"),
-        (Base32HexPadLower, "t8him6pbeehp62r39f9ii0pbmclp7it38d5n6e89144======"),
-        (Base32HexPadUpper, "T8HIM6PBEEHP62R39F9II0PBMCLP7IT38D5N6E89144======"),
-        (Base32Z, "het1sg3mqqt3gn5djxj11y3msci3817depfzgqejbrr"),
-        (Base58Flickr, "Z36tpRGiQ9Endr7dHahm9xwQdhmoER4emaRVT"),
-        (Base58Btc, "z36UQrhJq9fNDS7DiAHM9YXqDHMPfr4EMArvt"),
-        (Base64, "mRGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE"),
-        (Base64Pad, "MRGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE="),
-        (Base64Url, "uRGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE"),
-        (Base64UrlPad, "URGVjZW50cmFsaXplIGV2ZXJ5dGhpbmchISE="),
+        (Base8, "7362625631006654133464440102"),
+        (Base10, "9573277761329450583662625"),
+        (Base16Lower, "f796573206d616e692021"),
+        (Base16Upper, "F796573206D616E692021"),
+        (Base32Lower, "bpfsxgidnmfxgsibb"),
+        (Base32Upper, "BPFSXGIDNMFXGSIBB"),
+        (Base32HexLower, "vf5in683dc5n6i811"),
+        (Base32HexUpper, "VF5IN683DC5N6I811"),
+        (Base32PadLower, "cpfsxgidnmfxgsibb"),
+        (Base32PadUpper, "CPFSXGIDNMFXGSIBB"),
+        (Base32HexPadLower, "tf5in683dc5n6i811"),
+        (Base32HexPadUpper, "TF5IN683DC5N6I811"),
+        (Base32Z, "hxf1zgedpcfzg1ebb"),
+        //(Base36Lower, "k2lcpzo5yikidynfl"),
+        //(Base36Upper, "K2LCPZO5YIKIDYNFL"),
+        (Base58Flickr, "Z7Pznk19XTTzBtx"),
+        (Base58Btc, "z7paNL19xttacUY"),
+        (Base64, "meWVzIG1hbmkgIQ"),
+        (Base64Pad, "MeWVzIG1hbmkgIQ=="),
+        (Base64Url, "ueWVzIG1hbmkgIQ"),
+        (Base64UrlPad, "UeWVzIG1hbmkgIQ=="),
     ];
-
-    for (base, output) in test_cases {
-        assert_eq!(encode(base, input), output);
-        assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
-    }
+    encode_decode_assert(input, test_cases);
 }
 
 #[test]
-fn preserves_leading_zeroes() {
-    let input = b"\x00\x00\x00yes mani !";
+fn preserves_leading_zero() {
+    let input = b"\x00yes mani !";
     let test_cases = vec![
-        (Identity, "\x00\x00\x00\x00yes mani !"),
-        (Base2, "000000000000000000000000001111001011001010111001100100000011011010110000101101110011010010010000000100001"),
-        (Base8, "700000000362625631006654133464440102"),
-        (Base10, "9000573277761329450583662625"),
-        (Base16Lower, "f000000796573206d616e692021"),
-        (Base16Upper, "F000000796573206D616E692021"),
-        (Base32Lower, "baaaaa6lfomqg2yloneqcc"),
-        (Base32Upper, "BAAAAA6LFOMQG2YLONEQCC"),
-        (Base32PadLower, "caaaaa6lfomqg2yloneqcc==="),
-        (Base32PadUpper, "CAAAAA6LFOMQG2YLONEQCC==="),
-        (Base32HexLower, "v00000ub5ecg6qobed4g22"),
-        (Base32HexUpper, "V00000UB5ECG6QOBED4G22"),
-        (Base32HexPadLower, "t00000ub5ecg6qobed4g22==="),
-        (Base32HexPadUpper, "T00000UB5ECG6QOBED4G22==="),
-        (Base32Z, "hyyyyy6mfqcog4amqpronn"),
-        (Base58Flickr, "Z1117Pznk19XTTzBtx"),
-        (Base58Btc, "z1117paNL19xttacUY"),
-        (Base64, "mAAAAeWVzIG1hbmkgIQ"),
-        (Base64Pad, "MAAAAeWVzIG1hbmkgIQ=="),
-        (Base64Url, "uAAAAeWVzIG1hbmkgIQ"),
-        (Base64UrlPad, "UAAAAeWVzIG1hbmkgIQ=="),
+        (Identity, "\x00\x00yes mani !"),
+        (Base2, "00000000001111001011001010111001100100000011011010110000101101110011010010010000000100001"),
+        (Base8, "7000745453462015530267151100204"),
+        (Base10, "90573277761329450583662625"),
+        (Base16Lower, "f00796573206d616e692021"),
+        (Base16Upper, "F00796573206D616E692021"),
+        (Base32Lower, "bab4wk4zanvqw42jaee"),
+        (Base32Upper, "BAB4WK4ZANVQW42JAEE"),
+        (Base32HexLower, "v01smasp0dlgmsq9044"),
+        (Base32HexUpper, "V01SMASP0DLGMSQ9044"),
+        (Base32PadLower, "cab4wk4zanvqw42jaee======"),
+        (Base32PadUpper, "CAB4WK4ZANVQW42JAEE======"),
+        (Base32HexPadLower, "t01smasp0dlgmsq9044======"),
+        (Base32HexPadUpper, "T01SMASP0DLGMSQ9044======"),
+        (Base32Z, "hybhskh3ypiosh4jyrr"),
+        //(Base36Lower, "k02lcpzo5yikidynfl"),
+        //(Base36Upper, "K02LCPZO5YIKIDYNFL"),
+        (Base58Flickr, "Z17Pznk19XTTzBtx"),
+        (Base58Btc, "z17paNL19xttacUY"),
+        (Base64, "mAHllcyBtYW5pICE"),
+        (Base64Pad, "MAHllcyBtYW5pICE="),
+        (Base64Url, "uAHllcyBtYW5pICE"),
+        (Base64UrlPad, "UAHllcyBtYW5pICE="),
     ];
+    encode_decode_assert(input, test_cases);
+}
 
-    for (base, output) in test_cases {
-        assert_eq!(encode(base, input), output);
-        assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
-    }
+#[test]
+fn preserves_two_leading_zeroes() {
+    let input = b"\x00\x00yes mani !";
+    let test_cases = vec![
+        (Identity, "\x00\x00\x00yes mani !"),
+        (Base2, "0000000000000000001111001011001010111001100100000011011010110000101101110011010010010000000100001"),
+        (Base8, "700000171312714403326055632220041"),
+        (Base10, "900573277761329450583662625"),
+        (Base16Lower, "f0000796573206d616e692021"),
+        (Base16Upper, "F0000796573206D616E692021"),
+        (Base32Lower, "baaahszltebwwc3tjeaqq"),
+        (Base32Upper, "BAAAHSZLTEBWWC3TJEAQQ"),
+        (Base32HexLower, "v0007ipbj41mm2rj940gg"),
+        (Base32HexUpper, "V0007IPBJ41MM2RJ940GG"),
+        (Base32PadLower, "caaahszltebwwc3tjeaqq===="),
+        (Base32PadUpper, "CAAAHSZLTEBWWC3TJEAQQ===="),
+        (Base32HexPadLower, "t0007ipbj41mm2rj940gg===="),
+        (Base32HexPadUpper, "T0007IPBJ41MM2RJ940GG===="),
+        (Base32Z, "hyyy813murbssn5ujryoo"),
+        //(Base36Lower, "k002lcpzo5yikidynfl"),
+        //(Base36Upper, "K002LCPZO5YIKIDYNFL"),
+        (Base58Flickr, "Z117Pznk19XTTzBtx"),
+        (Base58Btc, "z117paNL19xttacUY"),
+        (Base64, "mAAB5ZXMgbWFuaSAh"),
+        (Base64Pad, "MAAB5ZXMgbWFuaSAh"),
+        (Base64Url, "uAAB5ZXMgbWFuaSAh"),
+        (Base64UrlPad, "UAAB5ZXMgbWFuaSAh"),
+
+    ];
+    encode_decode_assert(input, test_cases);
 }

@@ -1,15 +1,58 @@
-use data_encoding::Encoding;
-use data_encoding_macro::{internal_new_encoding, new_encoding};
+use data_encoding::{Encoding, Specification};
+use lazy_static::lazy_static;
 
-// Base2 (alphabet: 01)
-pub const BASE2: Encoding = new_encoding! {
-    symbols: "01",
-};
+lazy_static! {
+    // Base2 (alphabet: 01)
+    pub static ref BASE2: Encoding = {
+        let mut spec = Specification::new();
+        spec.symbols.push_str("01");
+        spec.encoding().unwrap()
+    };
 
-// Base8 (alphabet: 01234567)
-pub const BASE8: Encoding = new_encoding! {
-    symbols: "01234567",
-};
+    // Base8 (alphabet: 01234567)
+    pub static ref BASE8: Encoding = {
+        let mut spec = Specification::new();
+        spec.symbols.push_str("01234567");
+        spec.encoding().unwrap()
+    };
+
+    // Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
+    pub static ref BASE32_NOPAD_LOWER: Encoding = {
+        let mut spec = Specification::new();
+        spec.symbols.push_str("abcdefghijklmnopqrstuvwxyz234567");
+        spec.encoding().unwrap()
+    };
+
+    // Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
+    pub static ref BASE32_PAD_LOWER: Encoding = {
+        let mut spec = Specification::new();
+        spec.symbols.push_str("abcdefghijklmnopqrstuvwxyz234567");
+        spec.padding = Some('=');
+        spec.encoding().unwrap()
+    };
+
+    // Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
+    pub static ref BASE32HEX_NOPAD_LOWER: Encoding = {
+        let mut spec = Specification::new();
+        spec.symbols.push_str("0123456789abcdefghijklmnopqrstuv");
+        spec.encoding().unwrap()
+    };
+
+    // Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
+    pub static ref BASE32HEX_PAD_LOWER: Encoding = {
+        let mut spec = Specification::new();
+        spec.symbols.push_str("0123456789abcdefghijklmnopqrstuv");
+        spec.padding = Some('=');
+        spec.encoding().unwrap()
+    };
+
+    // z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
+    pub static ref BASE32Z: Encoding = {
+        let mut spec = Specification::new();
+        spec.symbols.push_str("ybndrfg8ejkmcpqxot1uwisza345h769");
+        spec.encoding().unwrap()
+    };
+}
 
 /// Base10 (alphabet: 0123456789)
 pub const BASE10: &str = "0123456789";
@@ -20,44 +63,17 @@ pub const BASE16_LOWER: Encoding = data_encoding::HEXLOWER;
 // Base16 upper hexadecimal (alphabet: 0123456789ABCDEF).
 pub const BASE16_UPPER: Encoding = data_encoding::HEXUPPER;
 
-// Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
-pub const BASE32_NOPAD_LOWER: Encoding = new_encoding! {
-    symbols: "abcdefghijklmnopqrstuvwxyz234567",
-};
-
 // Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
 pub const BASE32_NOPAD_UPPER: Encoding = data_encoding::BASE32_NOPAD;
-
-// Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
-pub const BASE32_PAD_LOWER: Encoding = new_encoding! {
-    symbols: "abcdefghijklmnopqrstuvwxyz234567",
-    padding: '=',
-};
 
 // Base32, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
 pub const BASE32_PAD_UPPER: Encoding = data_encoding::BASE32;
 
-// Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
-pub const BASE32HEX_NOPAD_LOWER: Encoding = new_encoding! {
-    symbols: "0123456789abcdefghijklmnopqrstuv",
-};
-
 // Base32hex, rfc4648 no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
 pub const BASE32HEX_NOPAD_UPPER: Encoding = data_encoding::BASE32HEX_NOPAD;
 
-// Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
-pub const BASE32HEX_PAD_LOWER: Encoding = new_encoding! {
-    symbols: "0123456789abcdefghijklmnopqrstuv",
-    padding: '=',
-};
-
 /// Base32hex, rfc4648 with padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
 pub const BASE32HEX_PAD_UPPER: Encoding = data_encoding::BASE32HEX;
-
-// z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
-pub const BASE32Z: Encoding = new_encoding! {
-    symbols: "ybndrfg8ejkmcpqxot1uwisza345h769",
-};
 
 // Base58 Flickr's alphabet for creating short urls from photo ids.
 pub const BASE58_FLICKR: &str = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";

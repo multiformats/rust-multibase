@@ -11,9 +11,9 @@ repository = "https://github.com/multiformats/rust-multibase"
 keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
 
 [dependencies]
-base-x = "0.2"
-data-encoding = "2.2"
-data-encoding-macro = "0.1.8"
+base-x = { git = "https://github.com/whalelephant/base-x-rs", branch = "no_std", default-features = false }
+data-encoding = { version = "2.3", default-features = false, features = ["alloc"] }
+lazy_static = { features = ["spin_no_std"], version = "1.4.0" }
 
 [dev-dependencies]
 criterion = "0.3"
@@ -25,3 +25,7 @@ harness = false
 
 [workspace]
 members = ["cli"]
+
+[features]
+default = ["std"]
+std = []

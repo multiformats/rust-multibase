@@ -1,6 +1,9 @@
 use crate::encoding;
 use crate::error::Result;
 
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
+
 pub(crate) trait BaseCodec {
     /// Encode with the given byte slice.
     fn encode<I: AsRef<[u8]>>(input: I) -> String;

@@ -1,8 +1,11 @@
 //! # multibase
 //!
 //! Implementation of [multibase](https://github.com/multiformats/multibase) in Rust.
-
+#![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
+
+#[cfg(not(feature = "std"))]
+extern crate alloc;
 
 mod base;
 mod encoding;
@@ -11,6 +14,9 @@ mod impls;
 
 pub use self::base::Base;
 pub use self::error::{Error, Result};
+
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
 
 /// Decode the base string.
 ///

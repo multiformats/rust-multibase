@@ -1,4 +1,7 @@
-use std::{error, fmt};
+#[cfg(not(feature = "std"))]
+use core as std;
+
+use std::fmt;
 
 /// Type alias to use this library's [`Error`] type in a `Result`.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -21,7 +24,8 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {}
+#[cfg(feature = "std")]
+impl std::error::Error for Error {}
 
 impl From<base_x::DecodeError> for Error {
     fn from(_: base_x::DecodeError) -> Self {

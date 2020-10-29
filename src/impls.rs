@@ -2,7 +2,9 @@ use crate::encoding;
 use crate::error::Result;
 
 macro_rules! derrive_base_encoding {
-    ($type:ident, $encoding:expr) => {
+    (#[$doc:meta] $type:ident, $encoding:expr;) => {
+
+        #[$doc]
         #[derive(PartialEq, Eq, Clone, Copy, Debug)]
         pub(crate) struct $type;
 
@@ -16,14 +18,16 @@ macro_rules! derrive_base_encoding {
             }
         }
     };
-    ($type:ident, $encoding:expr; $($type2:ident, $encoding2:expr);+) => {
-        derrive_base_encoding! ($type, $encoding);
-        derrive_base_encoding!($($type2, $encoding2);+);
+    (#[$doc:meta] $type:ident, $encoding:expr; $(#[$doc2:meta] $type2:ident, $encoding2:expr;)+) => {
+        derrive_base_encoding! (#[$doc] $type, $encoding;);
+        derrive_base_encoding! ($(#[$doc2] $type2, $encoding2;)+);
     };
 }
 
 macro_rules! derrive_base_x {
-    ($type:ident, $encoding:expr) => {
+    (#[$doc:meta] $type:ident, $encoding:expr;) => {
+
+        #[$doc]
         #[derive(PartialEq, Eq, Clone, Copy, Debug)]
         pub(crate) struct $type;
 
@@ -37,9 +41,9 @@ macro_rules! derrive_base_x {
             }
         }
     };
-    ($type:ident, $encoding:expr; $($type2:ident, $encoding2:expr);+) => {
-        derrive_base_x! ($type, $encoding);
-        derrive_base_x!($($type2, $encoding2);+);
+    (#[$doc:meta] $type:ident, $encoding:expr; $(#[$doc2:meta] $type2:ident, $encoding2:expr;)+) => {
+        derrive_base_x! (#[$doc] $type, $encoding;);
+        derrive_base_x! ($(#[$doc2] $type2, $encoding2;)+);
     };
 }
 
@@ -66,70 +70,50 @@ impl BaseCodec for Identity {
 }
 
 derrive_base_encoding! {
+    /// Base2 (alphabet: 01).
     Base2, encoding::BASE2;
+    /// Base8 (alphabet: 01234567).
     Base8, encoding::BASE8;
+    /// Base16 lower hexadecimal (alphabet: 0123456789abcdef).
     Base16Lower, encoding::BASE16_LOWER;
+    /// Base16 upper hexadecimal (alphabet: 0123456789ABCDEF).
     Base16Upper, encoding::BASE16_UPPER;
+    /// Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
     Base32Lower, encoding::BASE32_NOPAD_LOWER;
+    /// Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
     Base32Upper, encoding::BASE32_NOPAD_UPPER;
+    /// Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
     Base32PadLower, encoding::BASE32_PAD_LOWER;
+    /// Base32, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
     Base32PadUpper, encoding::BASE32_PAD_UPPER;
+    /// Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
     Base32HexLower, encoding::BASE32HEX_NOPAD_LOWER;
+    /// Base32hex, rfc4648 no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
     Base32HexUpper, encoding::BASE32HEX_NOPAD_UPPER;
+    /// Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
     Base32HexPadLower, encoding::BASE32HEX_PAD_LOWER;
+    /// Base32hex, rfc4648 with padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
     Base32HexPadUpper, encoding::BASE32HEX_PAD_UPPER;
+    /// z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
     Base32Z, encoding::BASE32Z;
+    /// Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
     Base64, encoding::BASE64_NOPAD;
+    /// Base64, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
     Base64Pad, encoding::BASE64_PAD;
+    /// Base64 url, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
     Base64Url, encoding::BASE64URL_NOPAD;
-    Base64UrlPad, encoding::BASE64URL_PAD
+    /// Base64 url, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
+    Base64UrlPad, encoding::BASE64URL_PAD;
 }
 
 derrive_base_x! {
+    /// Base10 (alphabet: 0123456789).
     Base10, encoding::BASE10;
+    /// Base58 flicker (alphabet: 123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ).
     Base58Flickr, encoding::BASE58_FLICKR;
-    Base58Btc, encoding::BASE58_BITCOIN
+    /// Base58 bitcoin (alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz).
+    Base58Btc, encoding::BASE58_BITCOIN;
 }
-
-/// Base2 (alphabet: 01).
-
-/// Base8 (alphabet: 01234567).
-
-/// Base10 (alphabet: 0123456789).
-
-/// Base16 lower hexadecimal (alphabet: 0123456789abcdef).
-
-/// Base16 upper hexadecimal (alphabet: 0123456789ABCDEF).
-
-/// Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
-
-/// Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
-
-/// Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
-
-/// Base32, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
-
-/// Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
-
-/// Base32hex, rfc4648 no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
-
-/// Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
-
-/// Base32hex, rfc4648 with padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
-
-/// z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
-
-/// Base58 flicker (alphabet: 123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ).
-
-/// Base58 bitcoin (alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz).
-
-/// Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
-
-/// Base64, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
-
-/// Base64 url, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
-
-/// Base64 url, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
 
 #[cfg(test)]
 mod tests {

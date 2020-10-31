@@ -1,49 +1,43 @@
 use crate::encoding;
 use crate::error::Result;
 
-macro_rules! derrive_base_encoding {
-    (#[$doc:meta] $type:ident, $encoding:expr;) => {
+macro_rules! derive_base_encoding {
+    ( $(#[$doc:meta] $type:ident, $encoding:expr;)* ) => {
+        $(
+            #[$doc]
+            #[derive(PartialEq, Eq, Clone, Copy, Debug)]
+            pub(crate) struct $type;
 
-        #[$doc]
-        #[derive(PartialEq, Eq, Clone, Copy, Debug)]
-        pub(crate) struct $type;
+            impl BaseCodec for $type {
+                fn encode<I: AsRef<[u8]>>(input: I) -> String {
+                    $encoding.encode(input.as_ref())
+                }
 
-        impl BaseCodec for $type {
-            fn encode<I: AsRef<[u8]>>(input: I) -> String {
-                $encoding.encode(input.as_ref())
+                fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+                    Ok($encoding.decode(input.as_ref().as_bytes())?)
+                }
             }
-
-            fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-                Ok($encoding.decode(input.as_ref().as_bytes())?)
-            }
-        }
-    };
-    (#[$doc:meta] $type:ident, $encoding:expr; $(#[$doc2:meta] $type2:ident, $encoding2:expr;)+) => {
-        derrive_base_encoding! (#[$doc] $type, $encoding;);
-        derrive_base_encoding! ($(#[$doc2] $type2, $encoding2;)+);
+        )*
     };
 }
 
-macro_rules! derrive_base_x {
-    (#[$doc:meta] $type:ident, $encoding:expr;) => {
+macro_rules! derive_base_x {
+    ( $(#[$doc:meta] $type:ident, $encoding:expr;)* ) => {
+        $(
+            #[$doc]
+            #[derive(PartialEq, Eq, Clone, Copy, Debug)]
+            pub(crate) struct $type;
 
-        #[$doc]
-        #[derive(PartialEq, Eq, Clone, Copy, Debug)]
-        pub(crate) struct $type;
+            impl BaseCodec for $type {
+                fn encode<I: AsRef<[u8]>>(input: I) -> String {
+                    base_x::encode($encoding, input.as_ref())
+                }
 
-        impl BaseCodec for $type {
-            fn encode<I: AsRef<[u8]>>(input: I) -> String {
-                base_x::encode($encoding, input.as_ref())
+                fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+                    Ok(base_x::decode($encoding, input.as_ref())?)
+                }
             }
-
-            fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-                Ok(base_x::decode($encoding, input.as_ref())?)
-            }
-        }
-    };
-    (#[$doc:meta] $type:ident, $encoding:expr; $(#[$doc2:meta] $type2:ident, $encoding2:expr;)+) => {
-        derrive_base_x! (#[$doc] $type, $encoding;);
-        derrive_base_x! ($(#[$doc2] $type2, $encoding2;)+);
+        )*
     };
 }
 
@@ -69,7 +63,7 @@ impl BaseCodec for Identity {
     }
 }
 
-derrive_base_encoding! {
+derive_base_encoding! {
     /// Base2 (alphabet: 01).
     Base2, encoding::BASE2;
     /// Base8 (alphabet: 01234567).
@@ -106,7 +100,7 @@ derrive_base_encoding! {
     Base64UrlPad, encoding::BASE64URL_PAD;
 }
 
-derrive_base_x! {
+derive_base_x! {
     /// Base10 (alphabet: 0123456789).
     Base10, encoding::BASE10;
     /// Base58 flicker (alphabet: 123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ).

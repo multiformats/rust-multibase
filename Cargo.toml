@@ -10,14 +10,21 @@ homepage = "https://github.com/multiformats/rust-multibase"
 repository = "https://github.com/multiformats/rust-multibase"
 keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
 
+[features]
+default = ["std"]
+std = []
+
 [dependencies]
-base-x = "0.2"
-data-encoding = "2.2"
-data-encoding-macro = "0.1.8"
+base-x = { git = "https://github.com/whalelephant/base-x-rs", branch = "no_std", default-features = false }
+data-encoding = { version = "2.3.1", default-features = false, features = ["alloc"] }
+data-encoding-macro = "0.1.9"
 
 [dev-dependencies]
 criterion = "0.3"
 rand = "0.7"
+
+# [crates-io.patch]
+# base-x = { git = "https://github.com/whalelephant/base-x-rs", branch = "no_std", default-features = false }
 
 [[bench]]
 name = "multibase"

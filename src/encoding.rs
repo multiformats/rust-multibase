@@ -1,5 +1,5 @@
 use data_encoding::Encoding;
-use data_encoding_macro::{internal_new_encoding, new_encoding};
+use data_encoding_macro::new_encoding;
 
 // Base2 (alphabet: 01)
 pub const BASE2: Encoding = new_encoding! {

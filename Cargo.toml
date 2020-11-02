@@ -23,9 +23,6 @@ data-encoding-macro = "0.1.9"
 criterion = "0.3"
 rand = "0.7"
 
-# [crates-io.patch]
-# base-x = { git = "https://github.com/whalelephant/base-x-rs", branch = "no_std", default-features = false }
-
 [[bench]]
 name = "multibase"
 harness = false

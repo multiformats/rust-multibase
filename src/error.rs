@@ -1,10 +1,7 @@
-#[cfg(feature = "std")]
-use std::error;
 use core::fmt;
 
-#[cfg(feature = "std")]
 /// Type alias to use this library's [`Error`] type in a `Result`.
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = core::result::Result<T, Error>;
 
 /// Error types
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -25,7 +22,7 @@ impl fmt::Display for Error {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for Error {}
+impl std::error::Error for Error {}
 
 impl From<base_x::DecodeError> for Error {
     fn from(_: base_x::DecodeError) -> Self {

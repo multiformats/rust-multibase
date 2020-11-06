@@ -42,12 +42,12 @@ jobs:
 
   ensure_no_std:
     name: Ensure no_std
-    runs-on: ubuntu-latest
+    runs-on: thumbv6m-latest
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: thumbv6m-none-eabi-nightly
+          toolchain: nightly
           override: true
       - name: Build thumbv6m-none-eabi
         run: cargo build --target thumbv6m-none-eabi --no-default-features

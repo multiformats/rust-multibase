@@ -47,10 +47,10 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           override: true
       - name: Build thumbv6m-none-eabi
-        run: cargo build --target thumbv6m-none-eabi --no-default-feature
+        run: cargo build --target thumbv6m-none-eabi --no-default-features
 
   coverage:
     name: Code Coverage

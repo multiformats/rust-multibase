@@ -8,14 +8,14 @@ readme = "README.md"
 description = "multibase in rust"
 homepage = "https://github.com/multiformats/rust-multibase"
 repository = "https://github.com/multiformats/rust-multibase"
-keywords = ["ipld", "ipfs", "multihash", "multibase", "cid"]
+keywords = ["ipld", "ipfs", "multihash", "multibase", "cid", "no_std"]
 
 [features]
 default = ["std"]
-std = []
+std = ["data-encoding/std"]
 
 [dependencies]
-base-x = { git = "https://github.com/whalelephant/base-x-rs", branch = "no_std", default-features = false }
+base-x = { version = "0.2.6", default-features = false }
 data-encoding = { version = "2.3.1", default-features = false, features = ["alloc"] }
 data-encoding-macro = "0.1.9"
 

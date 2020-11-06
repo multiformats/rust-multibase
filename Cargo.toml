@@ -8,7 +8,7 @@ readme = "README.md"
 description = "multibase in rust"
 homepage = "https://github.com/multiformats/rust-multibase"
 repository = "https://github.com/multiformats/rust-multibase"
-keywords = ["ipld", "ipfs", "multihash", "multibase", "cid", "no_std"]
+keywords = ["ipld", "ipfs", "multihash", "cid", "no_std"]
 
 [features]
 default = ["std"]

@@ -1,6 +1,9 @@
 use crate::error::{Error, Result};
 use crate::impls::*;
 
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
+
 macro_rules! build_base_enum {
     ( $(#[$attr:meta] $code:expr => $base:ident,)* ) => {
         /// List of types currently supported in the multibase spec.

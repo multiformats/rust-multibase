@@ -40,6 +40,21 @@ jobs:
         with:
           command: test
 
+  ensure_no_std:
+    name: Ensure no_std
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - name: Install thumbv6m-none-eabi
+        run: rustup target add thumbv6m-none-eabi
+      - name: Build thumbv6m-none-eabi
+        run: cargo build --target thumbv6m-none-eabi --no-default-features
+
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest

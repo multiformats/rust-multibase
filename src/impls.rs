@@ -1,6 +1,9 @@
 use crate::encoding;
 use crate::error::Result;
 
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
+
 macro_rules! derive_base_encoding {
     ( $(#[$doc:meta] $type:ident, $encoding:expr;)* ) => {
         $(

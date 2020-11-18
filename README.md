@@ -32,14 +32,14 @@ multibase = "0.9"
 ```
 
 For `no_std`
-```
+```toml
 [dependencies]
 multibase = { version ="0.9", default-features = false }
 ```
 
-**note**: This crate relies on the [currently unstable](https://github.com/rust-lang/cargo/issues/7915) `host_dep` feature to [compile proc macros with the proper dependencies](https://docs.rs/data-encoding-macro/0.1.10/data_encoding_macro/), thus **requiring nightly rustc** to use.
-
 Then run `cargo build`.
+
+**note**: This crate relies on the [currently unstable](https://github.com/rust-lang/cargo/issues/7915) `host_dep` feature to [compile proc macros with the proper dependencies](https://docs.rs/data-encoding-macro/0.1.10/data_encoding_macro/), thus **requiring nightly rustc** to use.
 
 ## Usage
 

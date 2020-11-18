@@ -1,7 +1,8 @@
 use crate::encoding;
 use crate::error::Result;
+use data_encoding::{DecodeError, DecodePartial};
 
-#[cfg(not(feature = "std"))]
+#[cfg(feature = "alloc")]
 use alloc::{string::String, vec::Vec};
 
 macro_rules! derive_base_encoding {
@@ -11,6 +12,7 @@ macro_rules! derive_base_encoding {
             #[derive(PartialEq, Eq, Clone, Copy, Debug)]
             pub(crate) struct $type;
 
+            #[cfg(feature = "alloc")]
             impl BaseCodec for $type {
                 fn encode<I: AsRef<[u8]>>(input: I) -> String {
                     $encoding.encode(input.as_ref())
@@ -20,10 +22,29 @@ macro_rules! derive_base_encoding {
                     Ok($encoding.decode(input.as_ref().as_bytes())?)
                 }
             }
+
+            impl BaseCodecMut for $type {
+                fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]){
+                    $encoding.encode_mut(input.as_ref(), output)
+                }
+
+                fn encode_len(len: usize) -> usize {
+                    $encoding.encode_len(len)
+                }
+
+                fn decode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) -> core::result::Result<usize, DecodePartial> {
+                    $encoding.decode_mut(input.as_ref(), output)
+                }
+
+                fn decode_len(len: usize) -> core::result::Result<usize, DecodeError> {
+                    $encoding.decode_len(len)
+                }
+            }
         )*
     };
 }
 
+#[cfg(feature = "alloc")]
 macro_rules! derive_base_x {
     ( $(#[$doc:meta] $type:ident, $encoding:expr;)* ) => {
         $(
@@ -44,6 +65,7 @@ macro_rules! derive_base_x {
     };
 }
 
+#[cfg(feature = "alloc")]
 pub(crate) trait BaseCodec {
     /// Encode with the given byte slice.
     fn encode<I: AsRef<[u8]>>(input: I) -> String;
@@ -52,10 +74,28 @@ pub(crate) trait BaseCodec {
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>>;
 }
 
+pub(crate) trait BaseCodecMut {
+    /// Encode with the given byte slice to a mutable slice.
+    fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]);
+
+    /// Returns the encoded length of an input of length `len`
+    fn encode_len(len: usize) -> usize;
+
+    /// Encode with the given byte slice to a mutable slice.
+    fn decode_mut<I: AsRef<[u8]>>(
+        input: I,
+        output: &mut [u8],
+    ) -> core::result::Result<usize, DecodePartial>;
+
+    /// Returns the decoded length of an input of length `len`
+    fn decode_len(len: usize) -> core::result::Result<usize, DecodeError>;
+}
+
 /// Identity, 8-bit binary (encoder and decoder keeps data unmodified).
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Identity;
 
+#[cfg(feature = "alloc")]
 impl BaseCodec for Identity {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
         String::from_utf8(input.as_ref().to_vec()).expect("input must be valid UTF-8 bytes")
@@ -103,6 +143,7 @@ derive_base_encoding! {
     Base64UrlPad, encoding::BASE64URL_PAD;
 }
 
+#[cfg(feature = "alloc")]
 derive_base_x! {
     /// Base10 (alphabet: 0123456789).
     Base10, encoding::BASE10;
@@ -112,10 +153,12 @@ derive_base_x! {
     Base58Btc, encoding::BASE58_BITCOIN;
 }
 
+#[cfg(feature = "alloc")]
 /// Base36, [0-9a-z] no padding (alphabet: abcdefghijklmnopqrstuvwxyz0123456789).
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Base36Lower;
 
+#[cfg(feature = "alloc")]
 impl BaseCodec for Base36Lower {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
         base_x::encode(encoding::BASE36_LOWER, input.as_ref())
@@ -128,10 +171,12 @@ impl BaseCodec for Base36Lower {
     }
 }
 
+#[cfg(feature = "alloc")]
 /// Base36, [0-9A-Z] no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789).
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Base36Upper;
 
+#[cfg(feature = "alloc")]
 impl BaseCodec for Base36Upper {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
         base_x::encode(encoding::BASE36_UPPER, input.as_ref())

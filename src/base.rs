@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 use crate::impls::*;
 
-#[cfg(not(feature = "std"))]
+#[cfg(feature = "alloc")]
 use alloc::{string::String, vec::Vec};
 
 macro_rules! build_base_enum {
@@ -30,6 +30,7 @@ macro_rules! build_base_enum {
                 }
             }
 
+            #[cfg(feature = "alloc")]
             /// Encode the given byte slice to base string.
             pub fn encode<I: AsRef<[u8]>>(&self, input: I) -> String {
                 match self {
@@ -37,6 +38,7 @@ macro_rules! build_base_enum {
                 }
             }
 
+            #[cfg(feature = "alloc")]
             /// Decode the base string.
             pub fn decode<I: AsRef<str>>(&self, input: I) -> Result<Vec<u8>> {
                 match self {
@@ -60,7 +62,7 @@ build_base_enum! {
     'f' => Base16Lower,
     /// Base16 upper hexadecimal (alphabet: 0123456789ABCDEF).
     'F' => Base16Upper,
-     /// Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
+    /// Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
     'b' => Base32Lower,
     /// Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
     'B' => Base32Upper,

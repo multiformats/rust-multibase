@@ -5,10 +5,10 @@
 #![deny(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(not(feature = "std"))]
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
-#[cfg(not(feature = "std"))]
+#[cfg(feature = "alloc")]
 use alloc::{string::String, vec::Vec};
 
 mod base;
@@ -31,6 +31,7 @@ pub use self::error::{Error, Result};
 ///     (Base::Base58Btc, b"hello".to_vec())
 /// );
 /// ```
+#[cfg(feature = "alloc")]
 pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
     let input = input.as_ref();
     let code = input.chars().next().ok_or(Error::InvalidBaseString)?;
@@ -48,6 +49,7 @@ pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
 ///
 /// assert_eq!(encode(Base::Base58Btc, b"hello"), "zCn8eVZg");
 /// ```
+#[cfg(feature = "alloc")]
 pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
     let input = input.as_ref();
     let mut encoded = base.encode(input.as_ref());

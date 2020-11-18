@@ -1,6 +1,9 @@
 use crate::encoding;
 use crate::error::Result;
 
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
+
 macro_rules! derive_base_encoding {
     ( $(#[$doc:meta] $type:ident, $encoding:expr;)* ) => {
         $(
@@ -103,13 +106,40 @@ derive_base_encoding! {
 derive_base_x! {
     /// Base10 (alphabet: 0123456789).
     Base10, encoding::BASE10;
-    /// Base36, [0-9a-z] no padding (alphabet: 0123456789abcdefghijklmnopqrstuvwxyz).
-    Base36Lower, encoding::BASE36_LOWER;
-    /// Base36, [0-9A-Z] no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ).
-    Base36Upper, encoding::BASE36_UPPER;
     /// Base58 flicker (alphabet: 123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ).
     Base58Flickr, encoding::BASE58_FLICKR;
     /// Base58 bitcoin (alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz).
     Base58Btc, encoding::BASE58_BITCOIN;
 }
 
+/// Base36, [0-9a-z] no padding (alphabet: abcdefghijklmnopqrstuvwxyz0123456789).
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub(crate) struct Base36Lower;
+
+impl BaseCodec for Base36Lower {
+    fn encode<I: AsRef<[u8]>>(input: I) -> String {
+        base_x::encode(encoding::BASE36_LOWER, input.as_ref())
+    }
+
+    fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+        // The input is case insensitive, hence lowercase it
+        let lowercased = input.as_ref().to_ascii_lowercase();
+        Ok(base_x::decode(encoding::BASE36_LOWER, &lowercased)?)
+    }
+}
+
+/// Base36, [0-9A-Z] no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789).
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub(crate) struct Base36Upper;
+
+impl BaseCodec for Base36Upper {
+    fn encode<I: AsRef<[u8]>>(input: I) -> String {
+        base_x::encode(encoding::BASE36_UPPER, input.as_ref())
+    }
+
+    fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+        // The input is case insensitive, hence uppercase it
+        let uppercased = input.as_ref().to_ascii_uppercase();
+        Ok(base_x::decode(encoding::BASE36_UPPER, &uppercased)?)
+    }
+}

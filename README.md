@@ -28,8 +28,16 @@ First add this to your `Cargo.toml`
 
 ```toml
 [dependencies]
-multibase = "0.8"
+multibase = "0.9"
 ```
+
+For `no_std`
+```
+[dependencies]
+multibase = { version ="0.9", default-features = false }
+```
+
+**note**: This crate relies on the [currently unstable](https://github.com/rust-lang/cargo/issues/7915) `host_dep` feature to [compile proc macros with the proper dependencies](https://docs.rs/data-encoding-macro/0.1.10/data_encoding_macro/), thus **requiring nightly rustc** to use.
 
 Then run `cargo build`.
 
@@ -61,4 +69,4 @@ Small note: If editing the README, please conform to the [standard-readme](https
 
 ## License
 
-[MIT](LICENSE) © 2017 Friedel Ziegelmayer
+[MIT](LICENSE) © Friedel Ziegelmayer

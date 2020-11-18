@@ -12,7 +12,8 @@ keywords = ["ipld", "ipfs", "multihash", "cid", "no_std"]
 
 [features]
 default = ["std"]
-std = ["data-encoding/std"]
+std = ["data-encoding/std", "alloc"]
+alloc = []
 
 [dependencies]
 base-x = { version = "0.2.7", default-features = false }

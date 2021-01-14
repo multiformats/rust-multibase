@@ -21,7 +21,7 @@ data-encoding-macro = "0.1.9"
 
 [dev-dependencies]
 criterion = "0.3"
-rand = "0.7"
+rand = "0.8"
 
 [[bench]]
 name = "multibase"

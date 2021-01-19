@@ -22,7 +22,7 @@ impl fmt::Display for Error {
             Error::UnknownBase(code) => write!(f, "Unknown base code: {}", code),
             Error::InvalidBaseString => write!(f, "Invalid base string"),
             Error::DecodeError(err) => write!(f, "Error decoding something: {:?}", err),
-            Error::WriteFail(partial) => write!(f, "Partial Decoding: {:?}", partial)
+            Error::WriteFail(partial) => write!(f, "Partial Decoding: {:?}", partial),
         }
     }
 }

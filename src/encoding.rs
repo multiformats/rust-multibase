@@ -137,11 +137,17 @@ pub const BASE36_UPPER: (&str, usize) = ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 
 #[cfg(feature = "alloc")]
 // Base58 Flickr's alphabet for creating short urls from photo ids.
-pub const BASE58_FLICKR: (&str, usize) = ("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ", 58);
+pub const BASE58_FLICKR: (&str, usize) = (
+    "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
+    58,
+);
 
 #[cfg(feature = "alloc")]
 // Base58 Bitcoin's alphabet as defined in their Base58Check encoding.
-pub const BASE58_BITCOIN: (&str, usize) = ("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", 58);
+pub const BASE58_BITCOIN: (&str, usize) = (
+    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
+    58,
+);
 
 // Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
 pub const BASE64_NOPAD: Encoding = data_encoding::BASE64_NOPAD;

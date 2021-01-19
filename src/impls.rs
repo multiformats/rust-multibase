@@ -1,5 +1,5 @@
 use crate::encoding;
-use crate::error::{Result, Error};
+use crate::error::{Error, Result};
 
 #[cfg(feature = "alloc")]
 use alloc::{string::String, vec::Vec};
@@ -104,10 +104,7 @@ pub(crate) trait BaseCodec {
     fn encode_len(len: usize) -> usize;
 
     /// Encode with the given byte slice to a mutable slice.
-    fn decode_mut<I: AsRef<str>>(
-        input: I,
-        output: &mut [u8],
-    ) -> Result<usize>;
+    fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize>;
 
     /// Returns the decoded length of an input of length `len`
     fn decode_len(len: usize) -> Result<usize>;
@@ -257,10 +254,7 @@ impl BaseCodec for Identity {
         len
     }
 
-    fn decode_mut<I: AsRef<str>>(
-        input: I,
-        output: &mut [u8],
-    ) -> Result<usize> {
+    fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
         output.copy_from_slice(input.as_ref().as_bytes());
         Ok(input.as_ref().len())
     }

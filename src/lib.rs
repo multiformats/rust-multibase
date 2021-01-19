@@ -1,7 +1,7 @@
 //! # multibase
 //!
 //! Implementation of [multibase](https://github.com/multiformats/multibase) in Rust.
-//! 
+//!
 //! Usable without a global allocator for all encodings except those backed by [base-x](https://github.com/OrKoN/base-x-rs)
 
 #![deny(missing_docs)]
@@ -46,18 +46,18 @@ pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
 ///
 /// NOTE: while you _can_ use this method for non-byte aligned encodings, the `decode` method does exactly the same thing in a more ergonomic way.
 /// This is designed to be used when there is no global allocator.
-/// 
+///
 /// # Examples
 ///
 /// ```
 /// use multibase::{Base, decode_mut};
-/// 
+///
 /// let input = "MaGVsbG8gd29ybGQ=";
 /// let mut buffer = &mut [0u8; 255];
-/// 
+///
 /// let code = input.chars().next().unwrap();
 /// let base = Base::from_code(code).unwrap();
-/// 
+///
 /// let output = &mut buffer[0 .. base.decode_len(input.len()).unwrap()];
 /// decode_mut(base, input, output);
 /// assert_eq!(
@@ -92,17 +92,17 @@ pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
 ///
 /// NOTE: while you _can_ use this method for non-byte aligned encodings, the `encode` method does exactly the same thing in a more ergonomic way.
 /// This is designed to be used when there is no global allocator.
-/// 
+///
 /// # Examples
 ///
 /// ```
 /// use multibase::{Base, encode_mut};
-/// 
+///
 /// let input = "hello world";
 /// let mut buffer = &mut [0u8; 255];
-/// 
+///
 /// let base = Base::Base64Pad;
-/// 
+///
 /// let output = &mut buffer[0 .. base.encode_len(input.len())];
 /// encode_mut(base, input, output);
 /// assert_eq!(

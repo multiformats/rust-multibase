@@ -52,7 +52,7 @@ macro_rules! build_base_enum {
                     $( Self::$base => $base::decode_mut(input, output), )*
                 }
             }
-            
+
             /// Returns the size of the decoded slice.
             pub fn decode_len(&self, len: usize) -> Result<usize> {
                 match self {
@@ -66,7 +66,7 @@ macro_rules! build_base_enum {
                     $( Self::$base => $base::encode_mut(input, output), )*
                 }
             }
-            
+
             /// Returns the size of the encoded slice.
             pub fn encode_len(&self, len: usize) -> usize {
                 match self {

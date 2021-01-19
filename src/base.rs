@@ -45,10 +45,39 @@ macro_rules! build_base_enum {
                     $( Self::$base => $base::decode(input), )*
                 }
             }
+
+            /// Decode the base string into a mutable slice.
+            pub(crate) fn decode_mut<I: AsRef<str>>(&self, input: I, output: &mut [u8]) -> Result<usize> {
+                match self {
+                    $( Self::$base => $base::decode_mut(input, output), )*
+                }
+            }
+            
+            /// Returns the size of the decoded slice.
+            pub fn decode_len(&self, len: usize) -> Result<usize> {
+                match self {
+                    $( Self::$base => $base::decode_len(len - $code.len_utf8()), )*
+                }
+            }
+
+            /// Encode the given byte slice to mutable slice.
+            pub(crate) fn encode_mut<I: AsRef<[u8]>>(&self, input: I, output: &mut [u8]) {
+                match self {
+                    $( Self::$base => $base::encode_mut(input, output), )*
+                }
+            }
+            
+            /// Returns the size of the encoded slice.
+            pub fn encode_len(&self, len: usize) -> usize {
+                match self {
+                    $( Self::$base => $base::encode_len(len) + $code.len_utf8(), )*
+                }
+            }
         }
     }
 }
 
+#[cfg(feature = "alloc")]
 build_base_enum! {
     /// 8-bit binary (encoder and decoder keeps data unmodified).
     '\x00' => Identity,
@@ -88,6 +117,46 @@ build_base_enum! {
     'Z' => Base58Flickr,
     /// Base58 bitcoin (alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz).
     'z' => Base58Btc,
+    /// Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
+    'm' => Base64,
+    /// Base64, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
+    'M' => Base64Pad,
+    /// Base64 url, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
+    'u' => Base64Url,
+    /// Base64 url, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
+    'U' => Base64UrlPad,
+}
+
+#[cfg(not(feature = "alloc"))]
+build_base_enum! {
+    /// 8-bit binary (encoder and decoder keeps data unmodified).
+    '\x00' => Identity,
+    /// Base2 (alphabet: 01).
+    '0' => Base2,
+    /// Base8 (alphabet: 01234567).
+    '7' => Base8,
+    /// Base16 lower hexadecimal (alphabet: 0123456789abcdef).
+    'f' => Base16Lower,
+    /// Base16 upper hexadecimal (alphabet: 0123456789ABCDEF).
+    'F' => Base16Upper,
+    /// Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
+    'b' => Base32Lower,
+    /// Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
+    'B' => Base32Upper,
+    /// Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
+    'c' => Base32PadLower,
+    /// Base32, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
+    'C' => Base32PadUpper,
+    /// Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
+    'v' => Base32HexLower,
+    /// Base32hex, rfc4648 no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
+    'V' => Base32HexUpper,
+    /// Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
+    't' => Base32HexPadLower,
+    /// Base32hex, rfc4648 with padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
+    'T' => Base32HexPadUpper,
+    /// z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
+    'h' => Base32Z,
     /// Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
     'm' => Base64,
     /// Base64, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).

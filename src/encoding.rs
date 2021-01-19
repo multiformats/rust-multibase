@@ -1,6 +1,47 @@
 use data_encoding::Encoding;
 use data_encoding_macro::new_encoding;
 
+// At a later point (probably when floating point arithmatic in const fn is stable) the below functions can be const
+
+#[cfg(feature = "alloc")]
+/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp
+pub(crate) fn gen_encoded_size(base: usize, input_byte_size: usize) -> usize {
+    (input_byte_size as f64 * (log10(256) / log10(base))) as usize + 1
+}
+
+#[cfg(feature = "alloc")]
+/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp
+pub(crate) fn gen_decoded_size(base: usize, input_byte_size: usize) -> usize {
+    (input_byte_size as f64 * (log10(base) / log10(256))) as usize // might need to + 1 here maybe
+}
+
+#[cfg(feature = "alloc")]
+// https://stackoverflow.com/questions/35968963/trying-to-calculate-logarithm-base-10-without-math-h-really-close-just-having
+fn ln(x: usize) -> f64 {
+    let mut old_sum = 0.0;
+    let xmlxpl = (x as f64 - 1.0) / (x as f64 + 1.0);
+    let xmlxpl_2 = xmlxpl * xmlxpl;
+    let mut denom = 1.0;
+    let mut frac = xmlxpl;
+    let term = frac;
+    let mut sum = term;
+
+    while sum != old_sum {
+        old_sum = sum;
+        denom += 2.0;
+        frac *= xmlxpl_2;
+        sum += frac / denom;
+    }
+    return 2.0 * sum;
+}
+
+#[cfg(feature = "alloc")]
+const LN10: f64 = 2.3025850929940456840179914546844;
+#[cfg(feature = "alloc")]
+fn log10(x: usize) -> f64 {
+    return ln(x) / LN10;
+}
+
 // Base2 (alphabet: 01)
 pub const BASE2: Encoding = new_encoding! {
     symbols: "01",
@@ -13,7 +54,7 @@ pub const BASE8: Encoding = new_encoding! {
 
 #[cfg(feature = "alloc")]
 /// Base10 (alphabet: 0123456789)
-pub const BASE10: &str = "0123456789";
+pub const BASE10: (&str, usize) = ("0123456789", 10);
 
 // Base16 lower hexadecimal (alphabet: 0123456789abcdef)
 pub const BASE16_LOWER: Encoding = data_encoding::HEXLOWER_PERMISSIVE;
@@ -88,19 +129,19 @@ pub const BASE32Z: Encoding = new_encoding! {
 
 #[cfg(feature = "alloc")]
 /// Base36, [0-9a-z] no padding (alphabet: 0123456789abcdefghijklmnopqrstuvwxyz).
-pub const BASE36_LOWER: &str = "0123456789abcdefghijklmnopqrstuvwxyz";
+pub const BASE36_LOWER: (&str, usize) = ("0123456789abcdefghijklmnopqrstuvwxyz", 36);
 
 #[cfg(feature = "alloc")]
 /// Base36, [0-9A-Z] no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ).
-pub const BASE36_UPPER: &str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+pub const BASE36_UPPER: (&str, usize) = ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 36);
 
 #[cfg(feature = "alloc")]
 // Base58 Flickr's alphabet for creating short urls from photo ids.
-pub const BASE58_FLICKR: &str = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+pub const BASE58_FLICKR: (&str, usize) = ("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ", 58);
 
 #[cfg(feature = "alloc")]
 // Base58 Bitcoin's alphabet as defined in their Base58Check encoding.
-pub const BASE58_BITCOIN: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+pub const BASE58_BITCOIN: (&str, usize) = ("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", 58);
 
 // Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
 pub const BASE64_NOPAD: Encoding = data_encoding::BASE64_NOPAD;

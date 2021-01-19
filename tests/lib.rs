@@ -1,5 +1,7 @@
 use multibase::{decode, encode, Base, Base::*};
 
+// TODO: tests with no-alloc and mut encode/decode
+
 fn encode_decode_assert(input: &[u8], test_cases: Vec<(Base, &str)>) {
     for (base, output) in test_cases {
         assert_eq!(encode(base, input), output);
@@ -134,6 +136,7 @@ fn preserves_two_leading_zeroes() {
 #[test]
 fn case_insensitivity() {
     let input = b"hello world";
+    // excludes base-x
     let test_cases = vec![
         (Base16Lower, "f68656c6c6f20776F726C64"),
         (Base16Upper, "F68656c6c6f20776F726C64"),

@@ -26,7 +26,6 @@ fn ln(x: usize) -> f64 {
     let term = frac;
     let mut sum = term;
 
-    #[allow(clippy::float_cmp)] 
     while (sum - old_sum).abs() > f64::EPSILON {
         old_sum = sum;
         denom += 2.0;
@@ -37,10 +36,8 @@ fn ln(x: usize) -> f64 {
 }
 
 #[cfg(feature = "alloc")]
-const LN10: f64 = 2.302_585_092_994_046;
-#[cfg(feature = "alloc")]
 fn log10(x: usize) -> f64 {
-    ln(x) / LN10
+    ln(x) / core::f64::consts::LN_10
 }
 
 // Base2 (alphabet: 01)

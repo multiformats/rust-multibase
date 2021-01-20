@@ -12,8 +12,7 @@ pub(crate) fn gen_encoded_size(base: usize, input_byte_size: usize) -> usize {
 #[cfg(feature = "alloc")]
 /// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L48
 pub(crate) fn gen_decoded_size(base: usize, input_byte_size: usize) -> usize {
-    f64::ceil(input_byte_size as f64 * (f64::log10(base as f64) / f64::log10(256.0))) as usize + 1
-    // ceil may be excessive but its on the safer side and it works
+    (input_byte_size as f64 * (f64::log10(base as f64) / f64::log10(256.0))) as usize + 1 // this shouldn't need an extra one, something is wrong somewhere
 }
 
 // Base2 (alphabet: 01)
@@ -28,7 +27,7 @@ pub const BASE8: Encoding = new_encoding! {
 
 #[cfg(feature = "alloc")]
 /// Base10 (alphabet: 0123456789)
-pub const BASE10: (&str, usize) = ("0123456789", 10);
+pub const BASE10:&str = "0123456789";
 
 // Base16 lower hexadecimal (alphabet: 0123456789abcdef)
 pub const BASE16_LOWER: Encoding = data_encoding::HEXLOWER_PERMISSIVE;
@@ -103,25 +102,19 @@ pub const BASE32Z: Encoding = new_encoding! {
 
 #[cfg(feature = "alloc")]
 /// Base36, [0-9a-z] no padding (alphabet: 0123456789abcdefghijklmnopqrstuvwxyz).
-pub const BASE36_LOWER: (&str, usize) = ("0123456789abcdefghijklmnopqrstuvwxyz", 36);
+pub const BASE36_LOWER: &str = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 #[cfg(feature = "alloc")]
 /// Base36, [0-9A-Z] no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ).
-pub const BASE36_UPPER: (&str, usize) = ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 36);
+pub const BASE36_UPPER: &str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 #[cfg(feature = "alloc")]
 // Base58 Flickr's alphabet for creating short urls from photo ids.
-pub const BASE58_FLICKR: (&str, usize) = (
-    "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
-    58,
-);
+pub const BASE58_FLICKR: &str = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 
 #[cfg(feature = "alloc")]
 // Base58 Bitcoin's alphabet as defined in their Base58Check encoding.
-pub const BASE58_BITCOIN: (&str, usize) = (
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
-    58,
-);
+pub const BASE58_BITCOIN: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 // Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
 pub const BASE64_NOPAD: Encoding = data_encoding::BASE64_NOPAD;

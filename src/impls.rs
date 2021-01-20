@@ -53,36 +53,37 @@ macro_rules! derive_base_x {
     ( $(#[$doc:meta] $type:ident, $encoding:expr;)* ) => {
         $(
             #[$doc]
+            #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
             #[derive(PartialEq, Eq, Clone, Copy, Debug)]
             pub(crate) struct $type;
 
             impl BaseCodec for $type {
                 fn encode<I: AsRef<[u8]>>(input: I) -> String {
-                    base_x::encode($encoding.0, input.as_ref())
+                    base_x::encode($encoding, input.as_ref())
                 }
 
                 fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-                    Ok(base_x::decode($encoding.0, input.as_ref())?)
+                    Ok(base_x::decode($encoding, input.as_ref())?)
                 }
 
                 fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]){
-                    let out = base_x::encode($encoding.0, input.as_ref());
+                    let out = base_x::encode($encoding, input.as_ref());
                     output[..out.len()].copy_from_slice(out.as_bytes());
                 }
 
                 fn encode_len(len: usize) -> usize {
-                    encoding::gen_encoded_size($encoding.1, len)
+                    encoding::gen_encoded_size($encoding.chars().count(), len)
                 }
 
                 fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
-                    let out = base_x::decode($encoding.0, input.as_ref())?;
-                    println!("{}", out.len());
+                    let out = base_x::decode($encoding, input.as_ref())?;
+                    println!("{}, {:?}", out.len(), out);
                     output[..out.len()].copy_from_slice(out.as_slice());
                     Ok(out.len())
                 }
 
                 fn decode_len(len: usize) -> Result<usize> {
-                    Ok(encoding::gen_decoded_size($encoding.1, len))
+                    Ok(encoding::gen_decoded_size($encoding.chars().count(), len))
                 }
             }
         )*
@@ -91,10 +92,12 @@ macro_rules! derive_base_x {
 
 pub(crate) trait BaseCodec {
     #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     /// Encode with the given byte slice.
     fn encode<I: AsRef<[u8]>>(input: I) -> String;
 
     #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     /// Decode with the given string.
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>>;
 
@@ -166,32 +169,32 @@ pub(crate) struct Base36Lower;
 #[cfg(feature = "alloc")]
 impl BaseCodec for Base36Lower {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
-        base_x::encode(encoding::BASE36_LOWER.0, input.as_ref())
+        base_x::encode(encoding::BASE36_LOWER, input.as_ref())
     }
 
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
         // The input is case in-sensitive, hence lowercase it
         let lowercased = input.as_ref().to_ascii_lowercase();
-        Ok(base_x::decode(encoding::BASE36_LOWER.0, &lowercased)?)
+        Ok(base_x::decode(encoding::BASE36_LOWER, &lowercased)?)
     }
 
     fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) {
-        let out = base_x::encode(encoding::BASE36_LOWER.0, input.as_ref());
+        let out = base_x::encode(encoding::BASE36_LOWER, input.as_ref());
         output[..out.len()].copy_from_slice(out.as_bytes());
     }
 
     fn encode_len(len: usize) -> usize {
-        encoding::gen_encoded_size(encoding::BASE36_LOWER.1, len)
+        encoding::gen_encoded_size(encoding::BASE36_LOWER.chars().count(), len)
     }
 
     fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
-        let out = base_x::decode(encoding::BASE36_LOWER.0, input.as_ref())?;
+        let out = base_x::decode(encoding::BASE36_LOWER, input.as_ref())?;
         output[..out.len()].copy_from_slice(out.as_slice());
         Ok(out.len())
     }
 
     fn decode_len(len: usize) -> Result<usize> {
-        Ok(encoding::gen_decoded_size(encoding::BASE36_LOWER.1, len))
+        Ok(encoding::gen_decoded_size(encoding::BASE36_LOWER.chars().count(), len))
     }
 }
 
@@ -203,32 +206,32 @@ pub(crate) struct Base36Upper;
 #[cfg(feature = "alloc")]
 impl BaseCodec for Base36Upper {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
-        base_x::encode(encoding::BASE36_UPPER.0, input.as_ref())
+        base_x::encode(encoding::BASE36_UPPER, input.as_ref())
     }
 
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
         // The input is case insensitive, hence uppercase it
         let uppercased = input.as_ref().to_ascii_uppercase();
-        Ok(base_x::decode(encoding::BASE36_UPPER.0, &uppercased)?)
+        Ok(base_x::decode(encoding::BASE36_UPPER, &uppercased)?)
     }
 
     fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) {
-        let out = base_x::encode(encoding::BASE36_UPPER.0, input.as_ref());
+        let out = base_x::encode(encoding::BASE36_UPPER, input.as_ref());
         output[..out.len()].copy_from_slice(out.as_bytes());
     }
 
     fn encode_len(len: usize) -> usize {
-        encoding::gen_encoded_size(encoding::BASE36_UPPER.1, len)
+        encoding::gen_encoded_size(encoding::BASE36_UPPER.chars().count(), len)
     }
 
     fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
-        let out = base_x::decode(encoding::BASE36_UPPER.0, input.as_ref())?;
+        let out = base_x::decode(encoding::BASE36_UPPER, input.as_ref())?;
         output[..out.len()].copy_from_slice(out.as_slice());
         Ok(out.len())
     }
 
     fn decode_len(len: usize) -> Result<usize> {
-        Ok(encoding::gen_decoded_size(encoding::BASE36_UPPER.1, len))
+        Ok(encoding::gen_decoded_size(encoding::BASE36_UPPER.chars().count(), len))
     }
 }
 

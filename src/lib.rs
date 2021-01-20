@@ -34,6 +34,7 @@ pub use self::error::{Error, Result};
 /// );
 /// ```
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
     let input = input.as_ref();
     let code = input.chars().next().ok_or(Error::InvalidBaseString)?;
@@ -83,6 +84,7 @@ pub fn decode_mut<T: AsRef<str>>(base: Base, input: T, output: &mut [u8]) -> Res
 ///
 /// Panics where `output.len() != base.encode_len()`
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
     let input = input.as_ref();
     let mut encoded = base.encode(input.as_ref());

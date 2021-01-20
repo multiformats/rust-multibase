@@ -26,20 +26,21 @@ fn ln(x: usize) -> f64 {
     let term = frac;
     let mut sum = term;
 
+    #[allow(clippy::float_cmp)] 
     while sum != old_sum {
         old_sum = sum;
         denom += 2.0;
         frac *= xmlxpl_2;
         sum += frac / denom;
     }
-    return 2.0 * sum;
+    2.0 * sum
 }
 
 #[cfg(feature = "alloc")]
-const LN10: f64 = 2.3025850929940456840179914546844;
+const LN10: f64 = 2.302_585_092_994_046;
 #[cfg(feature = "alloc")]
 fn log10(x: usize) -> f64 {
-    return ln(x) / LN10;
+    ln(x) / LN10
 }
 
 // Base2 (alphabet: 01)

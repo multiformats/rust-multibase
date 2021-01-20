@@ -1,4 +1,4 @@
-use multibase::{decode, encode, Base, Base::*};
+use multibase::{decode, decode_mut, encode, encode_mut, Base, Base::*};
 
 // TODO: tests with no-alloc and mut encode/decode
 
@@ -6,6 +6,58 @@ fn encode_decode_assert(input: &[u8], test_cases: Vec<(Base, &str)>) {
     for (base, output) in test_cases {
         assert_eq!(encode(base, input), output);
         assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
+    }
+}
+
+fn encode_decode_mut_assert(input: &[u8], test_cases: Vec<(Base, &str)>) {
+    for (base, output) in test_cases {
+        {
+            let buffer = &mut [0u8; 255];
+            let out_buf = &mut buffer[0..base.encode_len(input.len())];
+
+            println!(
+                "\nencode len {} base {:?}",
+                base.encode_len(input.len()),
+                base
+            );
+            encode_mut(base, input, out_buf);
+            assert_eq!(
+                core::str::from_utf8(out_buf)
+                    .unwrap()
+                    .trim_end_matches('\u{0}'),
+                output,
+                "h {:?}",
+                base
+            );
+        }
+        {
+            let buffer = &mut [0u8; 255];
+            let code = output.chars().next().unwrap();
+            let out_base = Base::from_code(code).unwrap();
+            let out_buf = &mut buffer[0..out_base.decode_len(output.len()).unwrap()];
+
+            println!(
+                "decode len {}>{} base {:?}",
+                out_base.decode_len(output.len()).unwrap(),
+                out_buf.len(),
+                base
+            );
+            decode_mut(base, output, out_buf).unwrap();
+            println!("{:?}\n{:?}", out_buf, b"yes mani !");
+            assert_eq!(
+                (
+                    out_base,
+                    core::str::from_utf8(out_buf)
+                        .unwrap()
+                        .trim_end_matches('\u{0}')
+                ),
+                (base, core::str::from_utf8(input).unwrap()),
+                "h {:?}",
+                base
+            );
+        }
+        // assert_eq!(decode(output).unwrap(), (base, input.to_vec()));
+        println!("done")
     }
 }
 
@@ -67,7 +119,8 @@ fn test_basic() {
         (Base64Url, "ueWVzIG1hbmkgIQ"),
         (Base64UrlPad, "UeWVzIG1hbmkgIQ=="),
     ];
-    encode_decode_assert(input, test_cases);
+    encode_decode_assert(input, test_cases.clone());
+    encode_decode_mut_assert(input, test_cases);
 }
 
 #[test]
@@ -98,7 +151,8 @@ fn preserves_leading_zero() {
         (Base64Url, "uAHllcyBtYW5pICE"),
         (Base64UrlPad, "UAHllcyBtYW5pICE="),
     ];
-    encode_decode_assert(input, test_cases);
+    encode_decode_assert(input, test_cases.clone());
+    encode_decode_mut_assert(input, test_cases);
 }
 
 #[test]
@@ -130,7 +184,18 @@ fn preserves_two_leading_zeroes() {
         (Base64UrlPad, "UAAB5ZXMgbWFuaSAh"),
 
     ];
-    encode_decode_assert(input, test_cases);
+    encode_decode_assert(input, test_cases.clone());
+    encode_decode_mut_assert(input, test_cases);
+}
+
+#[test]
+fn long_content() {
+    let input = b"kajyvjjynjpofuyctkqmljxmrjchookbohimmyxoacqaxajhoqfsdarmvadwwrylxxnsbjelghuuaueujgyquookunfguflxbylozgpiorklewsplgooqecqebzfsxisxbvwtoafzyxmrgxctmttrvwlyhwsquwp";
+    let test_cases = vec![
+        (Base58Btc, "z4GKnabjuGcmhEc8DwLU8oUTHK1QRXx6bJ1KNYgWv7cTMe46eNJf833CoKjbY8KGhgoYbTcuaPNvvZpJkfDMx9bKwDVs4TtgV7diXHgU4YS8iTLLVav5t5M8UoUURrbxio24VdBJNLW67T8AsegLS5WSBYrB64oLoHfR7PEBkhXQ3pXWtYVqiT5giyejgubNQGzVjR8ANXkfgGfdpjQrTrcSuqq1"),
+    ];
+    encode_decode_assert(input, test_cases.clone());
+    encode_decode_mut_assert(input, test_cases);
 }
 
 #[test]

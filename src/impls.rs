@@ -67,7 +67,7 @@ macro_rules! derive_base_x {
 
                 fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]){
                     let out = base_x::encode($encoding.0, input.as_ref());
-                    output.copy_from_slice(out.as_bytes());
+                    output[..out.len()].copy_from_slice(out.as_bytes());
                 }
 
                 fn encode_len(len: usize) -> usize {
@@ -76,7 +76,8 @@ macro_rules! derive_base_x {
 
                 fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
                     let out = base_x::decode($encoding.0, input.as_ref())?;
-                    output.copy_from_slice(out.as_slice());
+                    println!("{}", out.len());
+                    output[..out.len()].copy_from_slice(out.as_slice());
                     Ok(out.len())
                 }
 
@@ -169,14 +170,14 @@ impl BaseCodec for Base36Lower {
     }
 
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-        // The input is case insensitive, hence lowercase it
+        // The input is case in-sensitive, hence lowercase it
         let lowercased = input.as_ref().to_ascii_lowercase();
         Ok(base_x::decode(encoding::BASE36_LOWER.0, &lowercased)?)
     }
 
     fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) {
         let out = base_x::encode(encoding::BASE36_LOWER.0, input.as_ref());
-        output.copy_from_slice(out.as_bytes());
+        output[..out.len()].copy_from_slice(out.as_bytes());
     }
 
     fn encode_len(len: usize) -> usize {
@@ -185,7 +186,7 @@ impl BaseCodec for Base36Lower {
 
     fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
         let out = base_x::decode(encoding::BASE36_LOWER.0, input.as_ref())?;
-        output.copy_from_slice(out.as_slice());
+        output[..out.len()].copy_from_slice(out.as_slice());
         Ok(out.len())
     }
 
@@ -213,7 +214,7 @@ impl BaseCodec for Base36Upper {
 
     fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) {
         let out = base_x::encode(encoding::BASE36_UPPER.0, input.as_ref());
-        output.copy_from_slice(out.as_bytes());
+        output[..out.len()].copy_from_slice(out.as_bytes());
     }
 
     fn encode_len(len: usize) -> usize {
@@ -222,7 +223,7 @@ impl BaseCodec for Base36Upper {
 
     fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
         let out = base_x::decode(encoding::BASE36_UPPER.0, input.as_ref())?;
-        output.copy_from_slice(out.as_slice());
+        output[..out.len()].copy_from_slice(out.as_slice());
         Ok(out.len())
     }
 

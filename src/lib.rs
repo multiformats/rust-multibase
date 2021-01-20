@@ -80,6 +80,8 @@ pub fn decode_mut<T: AsRef<str>>(base: Base, input: T, output: &mut [u8]) -> Res
 ///
 /// assert_eq!(encode(Base::Base58Btc, b"hello"), "zCn8eVZg");
 /// ```
+///
+/// Panics where `output.len() != base.encode_len()`
 #[cfg(feature = "alloc")]
 pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
     let input = input.as_ref();
@@ -99,7 +101,7 @@ pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
 /// use multibase::{Base, encode_mut};
 ///
 /// let input = "hello world";
-/// let mut buffer = &mut [0u8; 255];
+/// let buffer = &mut [0u8; 255];
 ///
 /// let base = Base::Base64Pad;
 ///
@@ -110,8 +112,9 @@ pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
 ///     "MaGVsbG8gd29ybGQ="
 /// );
 /// ```
-pub fn encode_mut<T: AsRef<str>>(base: Base, input: T, output: &mut [u8]) -> Result<()> {
+///
+/// Panics where `output.len() != base.encode_len()`
+pub fn encode_mut<T: AsRef<[u8]>>(base: Base, input: T, output: &mut [u8]) {
     base.code().encode_utf8(output);
     base.encode_mut(input.as_ref(), &mut output[base.code().len_utf8()..]);
-    Ok(())
 }

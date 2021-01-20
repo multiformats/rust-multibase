@@ -4,15 +4,15 @@ use data_encoding_macro::new_encoding;
 // At a later point (probably when floating point arithmatic in const fn is stable) the below functions can be const
 
 #[cfg(feature = "alloc")]
-/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp
+/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L94
 pub(crate) fn gen_encoded_size(base: usize, input_byte_size: usize) -> usize {
     (input_byte_size as f64 * (log10(256) / log10(base))) as usize + 1
 }
 
 #[cfg(feature = "alloc")]
-/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp
+/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L48
 pub(crate) fn gen_decoded_size(base: usize, input_byte_size: usize) -> usize {
-    (input_byte_size as f64 * (log10(base) / log10(256))) as usize // might need to + 1 here maybe
+    f64::ceil(input_byte_size as f64 * (log10(base) / log10(256))) as usize + 1 // ceil may be excessive but its on the safer side and it works
 }
 
 #[cfg(feature = "alloc")]

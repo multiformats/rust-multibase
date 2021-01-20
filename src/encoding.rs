@@ -27,7 +27,7 @@ fn ln(x: usize) -> f64 {
     let mut sum = term;
 
     #[allow(clippy::float_cmp)] 
-    while sum != old_sum {
+    while (sum - old_sum).abs() > f64::EPSILON {
         old_sum = sum;
         denom += 2.0;
         frac *= xmlxpl_2;

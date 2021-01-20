@@ -6,38 +6,14 @@ use data_encoding_macro::new_encoding;
 #[cfg(feature = "alloc")]
 /// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L94
 pub(crate) fn gen_encoded_size(base: usize, input_byte_size: usize) -> usize {
-    (input_byte_size as f64 * (log10(256) / log10(base))) as usize + 1
+    (input_byte_size as f64 * (f64::log10(256.0) / f64::log10(base as f64))) as usize + 1
 }
 
 #[cfg(feature = "alloc")]
 /// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L48
 pub(crate) fn gen_decoded_size(base: usize, input_byte_size: usize) -> usize {
-    f64::ceil(input_byte_size as f64 * (log10(base) / log10(256))) as usize + 1 // ceil may be excessive but its on the safer side and it works
-}
-
-#[cfg(feature = "alloc")]
-// https://stackoverflow.com/questions/35968963/trying-to-calculate-logarithm-base-10-without-math-h-really-close-just-having
-fn ln(x: usize) -> f64 {
-    let mut old_sum = 0.0;
-    let xmlxpl = (x as f64 - 1.0) / (x as f64 + 1.0);
-    let xmlxpl_2 = xmlxpl * xmlxpl;
-    let mut denom = 1.0;
-    let mut frac = xmlxpl;
-    let term = frac;
-    let mut sum = term;
-
-    while (sum - old_sum).abs() > f64::EPSILON {
-        old_sum = sum;
-        denom += 2.0;
-        frac *= xmlxpl_2;
-        sum += frac / denom;
-    }
-    2.0 * sum
-}
-
-#[cfg(feature = "alloc")]
-fn log10(x: usize) -> f64 {
-    ln(x) / core::f64::consts::LN_10
+    f64::ceil(input_byte_size as f64 * (f64::log10(base as f64) / f64::log10(256.0))) as usize + 1
+    // ceil may be excessive but its on the safer side and it works
 }
 
 // Base2 (alphabet: 01)

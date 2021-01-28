@@ -5,14 +5,15 @@ use data_encoding_macro::new_encoding;
 
 #[cfg(feature = "alloc")]
 /// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L94
-pub(crate) fn gen_encoded_size(base: usize, input_byte_size: usize) -> usize {
+pub(crate) fn calc_encoded_size(base: usize, input_byte_size: usize) -> usize {
     (input_byte_size as f64 * (f64::log10(256.0) / f64::log10(base as f64))) as usize + 1
 }
 
 #[cfg(feature = "alloc")]
 /// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L48
-pub(crate) fn gen_decoded_size(base: usize, input_byte_size: usize) -> usize {
-    (input_byte_size as f64 * (f64::log10(base as f64) / f64::log10(256.0))) as usize + 1 // this shouldn't need an extra one, something is wrong somewhere
+pub(crate) fn calc_decoded_size(base: usize, input_byte_size: usize) -> usize {
+    f64::ceil(input_byte_size as f64 * (f64::log10(base as f64) / f64::log10(256.0)) + 1.0) as usize
+    // this shouldn't need an extra one or ceiling, something is wrong somewhere
 }
 
 // Base2 (alphabet: 01)
@@ -27,7 +28,7 @@ pub const BASE8: Encoding = new_encoding! {
 
 #[cfg(feature = "alloc")]
 /// Base10 (alphabet: 0123456789)
-pub const BASE10:&str = "0123456789";
+pub const BASE10: &str = "0123456789";
 
 // Base16 lower hexadecimal (alphabet: 0123456789abcdef)
 pub const BASE16_LOWER: Encoding = data_encoding::HEXLOWER_PERMISSIVE;

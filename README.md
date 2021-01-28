@@ -54,6 +54,8 @@ let (base, data) = multibase::decode(base64);
 be surprised if using a different base turns into a performance bottleneck. You
 were warned!
 
+See more examples in the [documentation](https://docs.rs/multibase)
+
 ## Maintainers
 
 Captain: [@dignifiedquire](https://github.com/dignifiedquire).

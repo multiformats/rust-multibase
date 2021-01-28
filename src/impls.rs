@@ -31,17 +31,15 @@ macro_rules! derive_base_encoding {
                 }
 
                 fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
-                    match $encoding.decode_mut(input.as_ref().as_bytes(), output) {
-                        Ok(len) => Ok(len),
-                        Err(err) => Err(Error::WriteFail(err))
+                    let input_len = $encoding.decode_len(input.as_ref().len())?;
+                    if input_len != output.len() {
+                        return Err(Error::MismatchedSizes(input_len, output.len()))
                     }
+                    $encoding.decode_mut(input.as_ref().as_bytes(), output).map_err(Error::WriteFail)
                 }
 
                 fn decode_len(len: usize) -> Result<usize> {
-                    match $encoding.decode_len(len) {
-                        Ok(len) => Ok(len),
-                        Err(e) => Err(Error::DecodeError(e)) // this might be the wrong error type
-                    }
+                    $encoding.decode_len(len).map_err(Error::DecodeError)
                 }
             }
         )*
@@ -72,18 +70,18 @@ macro_rules! derive_base_x {
                 }
 
                 fn encode_len(len: usize) -> usize {
-                    encoding::gen_encoded_size($encoding.chars().count(), len)
+                    encoding::calc_encoded_size($encoding.chars().count(), len)
                 }
 
                 fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
                     let out = base_x::decode($encoding, input.as_ref())?;
-                    println!("{}, {:?}", out.len(), out);
+                    println!("{}\n{:?}\n{:?}", out.len(), out, output);
                     output[..out.len()].copy_from_slice(out.as_slice());
                     Ok(out.len())
                 }
 
                 fn decode_len(len: usize) -> Result<usize> {
-                    Ok(encoding::gen_decoded_size($encoding.chars().count(), len))
+                    Ok(encoding::calc_decoded_size($encoding.chars().count(), len))
                 }
             }
         )*
@@ -184,7 +182,7 @@ impl BaseCodec for Base36Lower {
     }
 
     fn encode_len(len: usize) -> usize {
-        encoding::gen_encoded_size(encoding::BASE36_LOWER.chars().count(), len)
+        encoding::calc_encoded_size(encoding::BASE36_LOWER.chars().count(), len)
     }
 
     fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
@@ -194,7 +192,10 @@ impl BaseCodec for Base36Lower {
     }
 
     fn decode_len(len: usize) -> Result<usize> {
-        Ok(encoding::gen_decoded_size(encoding::BASE36_LOWER.chars().count(), len))
+        Ok(encoding::calc_decoded_size(
+            encoding::BASE36_LOWER.chars().count(),
+            len,
+        ))
     }
 }
 
@@ -221,7 +222,7 @@ impl BaseCodec for Base36Upper {
     }
 
     fn encode_len(len: usize) -> usize {
-        encoding::gen_encoded_size(encoding::BASE36_UPPER.chars().count(), len)
+        encoding::calc_encoded_size(encoding::BASE36_UPPER.chars().count(), len)
     }
 
     fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
@@ -231,7 +232,10 @@ impl BaseCodec for Base36Upper {
     }
 
     fn decode_len(len: usize) -> Result<usize> {
-        Ok(encoding::gen_decoded_size(encoding::BASE36_UPPER.chars().count(), len))
+        Ok(encoding::calc_decoded_size(
+            encoding::BASE36_UPPER.chars().count(),
+            len,
+        ))
     }
 }
 

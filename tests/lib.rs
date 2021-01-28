@@ -43,7 +43,6 @@ fn encode_decode_mut_assert(input: &[u8], test_cases: Vec<(Base, &str)>) {
                 base
             );
             decode_mut(base, output, out_buf).unwrap();
-            println!("{:?}\n{:?}", out_buf, b"yes mani !");
             assert_eq!(
                 (
                     out_base,

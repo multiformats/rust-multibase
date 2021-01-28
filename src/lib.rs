@@ -1,8 +1,23 @@
-//! # multibase
-//!
 //! Implementation of [multibase](https://github.com/multiformats/multibase) in Rust.
 //!
-//! Usable without a global allocator for all encodings except those backed by [base-x](https://github.com/OrKoN/base-x-rs)
+//! ### Feature flags
+//!
+//! Default is `std`
+//!
+//! | Feature | Notes |
+//! | --- | --- |
+//! | `std` | Includes std::Error conversions and alloc |
+//! | `alloc` | Includes non-byte aligned encodings from [base-x](https://github.com/OrKoN/base-x-rs) `Base10`, `Base58(Flickr/Btc)`, and `Base36(Lower/Upper)` |
+//! | `[]` | Includes byte aligned encodings from [data-encoding](https://github.com/ia0/data-encoding) writing to mutable slices |
+//!
+//!
+//! ### Notes
+//!
+//! - This crate relies on the [currently unstable](https://github.com/rust-lang/cargo/issues/7915) **host_dep** feature to compile proc macros with the proper dependencies, thus requiring nightly rustc to use.
+//! - `(decode/encode)_mut` and associated `(decode/encode)_len` for base-x are _extremely_ unoptimized and shouldn't be used, they currently only exist for lib simplicity. Base-x is excluded without the alloc flag, where it would be necessary to have such functions anyway.
+//!
+//!
+//!
 
 #![deny(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -60,7 +75,7 @@ pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
 /// let base = Base::from_code(code).unwrap();
 ///
 /// let output = &mut buffer[0 .. base.decode_len(input.len()).unwrap()];
-/// decode_mut(base, input, output);
+/// decode_mut(base, input, output).unwrap();
 /// assert_eq!(
 ///     (base, core::str::from_utf8(output).unwrap().trim_end_matches('\u{0}')),
 ///     (Base::Base64Pad, "hello world")

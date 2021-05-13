@@ -1,6 +1,21 @@
 use data_encoding::Encoding;
 use data_encoding_macro::new_encoding;
 
+// At a later point (probably when floating point arithmatic in const fn is stable) the below functions can be const
+
+#[cfg(feature = "alloc")]
+/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L94
+pub(crate) fn calc_encoded_size(base: usize, input_byte_size: usize) -> usize {
+    (input_byte_size as f64 * (f64::log10(256.0) / f64::log10(base as f64))) as usize + 1
+}
+
+#[cfg(feature = "alloc")]
+/// math comes from here https://github.com/bitcoin/bitcoin/blob/f1e2f2a85962c1664e4e55471061af0eaa798d40/src/base58.cpp#L48
+pub(crate) fn calc_decoded_size(base: usize, input_byte_size: usize) -> usize {
+    f64::ceil(input_byte_size as f64 * (f64::log10(base as f64) / f64::log10(256.0)) + 1.0) as usize
+    // this shouldn't need an extra one or ceiling, something is wrong somewhere
+}
+
 // Base2 (alphabet: 01)
 pub const BASE2: Encoding = new_encoding! {
     symbols: "01",
@@ -11,6 +26,7 @@ pub const BASE8: Encoding = new_encoding! {
     symbols: "01234567",
 };
 
+#[cfg(feature = "alloc")]
 /// Base10 (alphabet: 0123456789)
 pub const BASE10: &str = "0123456789";
 
@@ -85,15 +101,19 @@ pub const BASE32Z: Encoding = new_encoding! {
     symbols: "ybndrfg8ejkmcpqxot1uwisza345h769",
 };
 
+#[cfg(feature = "alloc")]
 /// Base36, [0-9a-z] no padding (alphabet: 0123456789abcdefghijklmnopqrstuvwxyz).
 pub const BASE36_LOWER: &str = "0123456789abcdefghijklmnopqrstuvwxyz";
 
+#[cfg(feature = "alloc")]
 /// Base36, [0-9A-Z] no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ).
 pub const BASE36_UPPER: &str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+#[cfg(feature = "alloc")]
 // Base58 Flickr's alphabet for creating short urls from photo ids.
 pub const BASE58_FLICKR: &str = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 
+#[cfg(feature = "alloc")]
 // Base58 Bitcoin's alphabet as defined in their Base58Check encoding.
 pub const BASE58_BITCOIN: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 

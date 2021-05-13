@@ -32,14 +32,14 @@ multibase = "0.9"
 ```
 
 For `no_std`
-```
+```toml
 [dependencies]
 multibase = { version ="0.9", default-features = false }
 ```
 
-**note**: This crate relies on the [currently unstable](https://github.com/rust-lang/cargo/issues/7915) `host_dep` feature to [compile proc macros with the proper dependencies](https://docs.rs/data-encoding-macro/0.1.10/data_encoding_macro/), thus **requiring nightly rustc** to use.
-
 Then run `cargo build`.
+
+**note**: This crate relies on the [currently unstable](https://github.com/rust-lang/cargo/issues/7915) `host_dep` feature to [compile proc macros with the proper dependencies](https://docs.rs/data-encoding-macro/0.1.10/data_encoding_macro/), thus **requiring nightly rustc** to use.
 
 ## Usage
 
@@ -53,6 +53,8 @@ let (base, data) = multibase::decode(base64);
 **Note**: `base32` and `base64` are orders of magnitude faster due to byte alignment. Don't
 be surprised if using a different base turns into a performance bottleneck. You
 were warned!
+
+See more examples in the [documentation](https://docs.rs/multibase)
 
 ## Maintainers
 

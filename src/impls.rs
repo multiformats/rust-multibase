@@ -1,7 +1,7 @@
 use crate::encoding;
-use crate::error::Result;
+use crate::error::{Error, Result};
 
-#[cfg(not(feature = "std"))]
+#[cfg(feature = "alloc")]
 use alloc::{string::String, vec::Vec};
 
 macro_rules! derive_base_encoding {
@@ -12,22 +12,46 @@ macro_rules! derive_base_encoding {
             pub(crate) struct $type;
 
             impl BaseCodec for $type {
+                #[cfg(feature = "alloc")]
                 fn encode<I: AsRef<[u8]>>(input: I) -> String {
                     $encoding.encode(input.as_ref())
                 }
 
+                #[cfg(feature = "alloc")]
                 fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
                     Ok($encoding.decode(input.as_ref().as_bytes())?)
+                }
+
+                fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]){
+                    $encoding.encode_mut(input.as_ref(), output)
+                }
+
+                fn encode_len(len: usize) -> usize {
+                    $encoding.encode_len(len)
+                }
+
+                fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
+                    let input_len = $encoding.decode_len(input.as_ref().len())?;
+                    if input_len != output.len() {
+                        return Err(Error::MismatchedSizes(input_len, output.len()))
+                    }
+                    $encoding.decode_mut(input.as_ref().as_bytes(), output).map_err(Error::WriteFail)
+                }
+
+                fn decode_len(len: usize) -> Result<usize> {
+                    $encoding.decode_len(len).map_err(Error::DecodeError)
                 }
             }
         )*
     };
 }
 
+#[cfg(feature = "alloc")]
 macro_rules! derive_base_x {
     ( $(#[$doc:meta] $type:ident, $encoding:expr;)* ) => {
         $(
             #[$doc]
+            #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
             #[derive(PartialEq, Eq, Clone, Copy, Debug)]
             pub(crate) struct $type;
 
@@ -39,31 +63,53 @@ macro_rules! derive_base_x {
                 fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
                     Ok(base_x::decode($encoding, input.as_ref())?)
                 }
+
+                fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]){
+                    let out = base_x::encode($encoding, input.as_ref());
+                    output[..out.len()].copy_from_slice(out.as_bytes());
+                }
+
+                fn encode_len(len: usize) -> usize {
+                    encoding::calc_encoded_size($encoding.chars().count(), len)
+                }
+
+                fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
+                    let out = base_x::decode($encoding, input.as_ref())?;
+                    println!("{}\n{:?}\n{:?}", out.len(), out, output);
+                    output[..out.len()].copy_from_slice(out.as_slice());
+                    Ok(out.len())
+                }
+
+                fn decode_len(len: usize) -> Result<usize> {
+                    Ok(encoding::calc_decoded_size($encoding.chars().count(), len))
+                }
             }
         )*
     };
 }
 
 pub(crate) trait BaseCodec {
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     /// Encode with the given byte slice.
     fn encode<I: AsRef<[u8]>>(input: I) -> String;
 
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     /// Decode with the given string.
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>>;
-}
 
-/// Identity, 8-bit binary (encoder and decoder keeps data unmodified).
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
-pub(crate) struct Identity;
+    /// Encode with the given byte slice to a mutable slice.
+    fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]);
 
-impl BaseCodec for Identity {
-    fn encode<I: AsRef<[u8]>>(input: I) -> String {
-        String::from_utf8(input.as_ref().to_vec()).expect("input must be valid UTF-8 bytes")
-    }
+    /// Returns the encoded length of an input of length `len`
+    fn encode_len(len: usize) -> usize;
 
-    fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-        Ok(input.as_ref().as_bytes().to_vec())
-    }
+    /// Encode with the given byte slice to a mutable slice.
+    fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize>;
+
+    /// Returns the decoded length of an input of length `len`
+    fn decode_len(len: usize) -> Result<usize>;
 }
 
 derive_base_encoding! {
@@ -103,6 +149,7 @@ derive_base_encoding! {
     Base64UrlPad, encoding::BASE64URL_PAD;
 }
 
+#[cfg(feature = "alloc")]
 derive_base_x! {
     /// Base10 (alphabet: 0123456789).
     Base10, encoding::BASE10;
@@ -112,26 +159,52 @@ derive_base_x! {
     Base58Btc, encoding::BASE58_BITCOIN;
 }
 
+#[cfg(feature = "alloc")]
 /// Base36, [0-9a-z] no padding (alphabet: abcdefghijklmnopqrstuvwxyz0123456789).
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Base36Lower;
 
+#[cfg(feature = "alloc")]
 impl BaseCodec for Base36Lower {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
         base_x::encode(encoding::BASE36_LOWER, input.as_ref())
     }
 
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-        // The input is case insensitive, hence lowercase it
+        // The input is case in-sensitive, hence lowercase it
         let lowercased = input.as_ref().to_ascii_lowercase();
         Ok(base_x::decode(encoding::BASE36_LOWER, &lowercased)?)
     }
+
+    fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) {
+        let out = base_x::encode(encoding::BASE36_LOWER, input.as_ref());
+        output[..out.len()].copy_from_slice(out.as_bytes());
+    }
+
+    fn encode_len(len: usize) -> usize {
+        encoding::calc_encoded_size(encoding::BASE36_LOWER.chars().count(), len)
+    }
+
+    fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
+        let out = base_x::decode(encoding::BASE36_LOWER, input.as_ref())?;
+        output[..out.len()].copy_from_slice(out.as_slice());
+        Ok(out.len())
+    }
+
+    fn decode_len(len: usize) -> Result<usize> {
+        Ok(encoding::calc_decoded_size(
+            encoding::BASE36_LOWER.chars().count(),
+            len,
+        ))
+    }
 }
 
+#[cfg(feature = "alloc")]
 /// Base36, [0-9A-Z] no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789).
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Base36Upper;
 
+#[cfg(feature = "alloc")]
 impl BaseCodec for Base36Upper {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
         base_x::encode(encoding::BASE36_UPPER, input.as_ref())
@@ -141,5 +214,60 @@ impl BaseCodec for Base36Upper {
         // The input is case insensitive, hence uppercase it
         let uppercased = input.as_ref().to_ascii_uppercase();
         Ok(base_x::decode(encoding::BASE36_UPPER, &uppercased)?)
+    }
+
+    fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) {
+        let out = base_x::encode(encoding::BASE36_UPPER, input.as_ref());
+        output[..out.len()].copy_from_slice(out.as_bytes());
+    }
+
+    fn encode_len(len: usize) -> usize {
+        encoding::calc_encoded_size(encoding::BASE36_UPPER.chars().count(), len)
+    }
+
+    fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
+        let out = base_x::decode(encoding::BASE36_UPPER, input.as_ref())?;
+        output[..out.len()].copy_from_slice(out.as_slice());
+        Ok(out.len())
+    }
+
+    fn decode_len(len: usize) -> Result<usize> {
+        Ok(encoding::calc_decoded_size(
+            encoding::BASE36_UPPER.chars().count(),
+            len,
+        ))
+    }
+}
+
+/// Identity, 8-bit binary (encoder and decoder keeps data unmodified).
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub(crate) struct Identity;
+
+impl BaseCodec for Identity {
+    #[cfg(feature = "alloc")]
+    fn encode<I: AsRef<[u8]>>(input: I) -> String {
+        String::from_utf8(input.as_ref().to_vec()).expect("input must be valid UTF-8 bytes")
+    }
+
+    #[cfg(feature = "alloc")]
+    fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+        Ok(input.as_ref().as_bytes().to_vec())
+    }
+
+    fn encode_mut<I: AsRef<[u8]>>(input: I, output: &mut [u8]) {
+        output.copy_from_slice(input.as_ref());
+    }
+
+    fn encode_len(len: usize) -> usize {
+        len
+    }
+
+    fn decode_mut<I: AsRef<str>>(input: I, output: &mut [u8]) -> Result<usize> {
+        output.copy_from_slice(input.as_ref().as_bytes());
+        Ok(input.as_ref().len())
+    }
+
+    fn decode_len(len: usize) -> Result<usize> {
+        Ok(len)
     }
 }

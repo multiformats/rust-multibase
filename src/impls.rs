@@ -13,11 +13,11 @@ macro_rules! derive_base_encoding {
             #[derive(PartialEq, Eq, Clone, Copy, Debug)]
             pub(crate) struct $type;
 
-            impl BaseCodec<String, Vec<u8>> for $type {
+            impl CodecCode for $type {
                 const CODE: char = $code;
+            }
 
-                type Error = crate::Error;
-
+            impl BaseCodec<String, Vec<u8>> for $type {
                 fn encode(input: impl AsRef<[u8]>) -> Result<String> {
                     Ok($encoding.encode(input.as_ref()))
                 }
@@ -26,7 +26,7 @@ macro_rules! derive_base_encoding {
                     Ok($encoding.decode(input.as_ref().as_bytes())?)
                 }
             }
-            
+
         )*
     };
 }
@@ -38,11 +38,11 @@ macro_rules! derive_base_x {
             #[derive(PartialEq, Eq, Clone, Copy, Debug)]
             pub(crate) struct $type;
 
-            impl BaseCodec<String, Vec<u8>> for $type {
+            impl CodecCode for $type {
                 const CODE: char = $code;
+            }
 
-                type Error = crate::Error;
-
+            impl BaseCodec<String, Vec<u8>> for $type {
                 fn encode(input: impl AsRef<[u8]>) -> Result<String> {
                     Ok(base_x::encode($encoding, input.as_ref()))
                 }
@@ -55,33 +55,30 @@ macro_rules! derive_base_x {
     };
 }
 
-pub(crate) trait BaseCodec<En, De> {
+pub(crate) trait CodecCode {
     const CODE: char;
-    
-    /// dont matter xd
-    type Error;
-    
-    /// Encode with the given byte slice.
-    fn encode(input: impl AsRef<[u8]>) -> core::result::Result<En, Self::Error>;
-    /// Decode with the given string (as slice).
-    fn decode(input: impl AsRef<str>) -> core::result::Result<De, Self::Error>;
+}
 
-    fn code(&self) -> char {
-        Self::CODE
-    }
+/// Trait codecs use for encoding and decoding, generic over their output continer
+/// output container of encode must have the ability to prepend one byte for the codec code
+pub(crate) trait BaseCodec<En, De>: CodecCode {
+    /// Encode with the given byte slice.
+    fn encode(input: impl AsRef<[u8]>) -> Result<En>;
+    /// Decode with the given string (as slice).
+    fn decode(input: impl AsRef<str>) -> Result<De>;
 }
 
 /// Identity, 8-bit binary (encoder and decoder keeps data unmodified).
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Identity;
 
-impl BaseCodec<String, Vec<u8>> for Identity {
+impl CodecCode for Identity {
     const CODE: char = '\x00';
+}
 
-    type Error = crate::Error;
-
+impl BaseCodec<String, Vec<u8>> for Identity {
     fn encode(input: impl AsRef<[u8]>) -> Result<String> {
-        String::from_utf8(input.as_ref().to_vec()).map_err(|e| crate::Error::InvalidBaseString)
+        String::from_utf8(input.as_ref().to_vec()).map_err(|_| crate::Error::InvalidBaseString)
     }
 
     fn decode(input: impl AsRef<str>) -> Result<Vec<u8>> {
@@ -135,22 +132,21 @@ derive_base_x! {
     'z' => Base58Btc, encoding::BASE58_BITCOIN;
 }
 
-
 mod big {
     use base_x;
 
     use crate::encoding;
 
-    use super::{BaseCodec, Result};
+    use super::{BaseCodec, CodecCode, Result};
     /// Base36, [0-9a-z] no padding (alphabet: abcdefghijklmnopqrstuvwxyz0123456789).
     #[derive(PartialEq, Eq, Clone, Copy, Debug)]
     pub(crate) struct Base36Lower;
 
-    impl BaseCodec<String, Vec<u8>> for Base36Lower {
+    impl CodecCode for Base36Lower {
         const CODE: char = 'k';
+    }
 
-        type Error = crate::Error;
-
+    impl BaseCodec<String, Vec<u8>> for Base36Lower {
         fn encode(input: impl AsRef<[u8]>) -> Result<String> {
             Ok(base_x::encode(encoding::BASE36_LOWER, input.as_ref()))
         }
@@ -166,11 +162,11 @@ mod big {
     #[derive(PartialEq, Eq, Clone, Copy, Debug)]
     pub(crate) struct Base36Upper;
 
-    impl BaseCodec<String, Vec<u8>> for Base36Upper {
+    impl CodecCode for Base36Upper {
         const CODE: char = 'K';
+    }
 
-        type Error = crate::Error;
-
+    impl BaseCodec<String, Vec<u8>> for Base36Upper {
         fn encode(input: impl AsRef<[u8]>) -> Result<String> {
             Ok(base_x::encode(encoding::BASE36_UPPER, input.as_ref()))
         }
@@ -183,33 +179,77 @@ mod big {
     }
 }
 
-// mod smol {
-//         use smol_base_x::Base;
+pub mod smol {
 
-//         use super::BaseCodec;
-//         use super::Result;
-//         /// Base36, [0-9a-z] no padding (alphabet: abcdefghijklmnopqrstuvwxyz0123456789).
-//         #[derive(PartialEq, Eq, Clone, Copy, Debug)]
-//         pub(crate) struct Base36Lower<const S: usize>;
+    // TODO not unwrap
 
-//         impl<const S: usize> Base<36> for Base36Lower<S> {
-//             const ALPHABET: [u8; 36] = *b"abcdefghijklmnopqrstuvwxyz0123456789";
-//         }
-    
-//         impl<const S: usize> BaseCodec for Base36Lower<S> {
-//             fn encode<I: AsRef<[u8]>>(input: I) -> String {
-//                 let mut buf = [0u8; S];
-//                 let written = Base36Lower::encode_mut(input, &mut buf).unwrap();
-//                 String::from_utf8(buf[..written].to_vec()).unwrap()
-//             }
-    
-//             fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-//                 // The input is case insensitive, hence lowercase it
-//                 let lowercased = input.as_ref().to_ascii_lowercase();
-//                 let mut buf = [0u8; S];
-//                 let written = Base36Lower::decode_mut(input.as_ref(), &mut buf).unwrap();
+    use heapless::{String, Vec};
+    use smol_base_x::Base;
 
-//                 Ok(buf[..written].to_owned())
-//             }
-//         }
-// }
+    use crate::Error;
+
+    use super::BaseCodec;
+    use super::CodecCode;
+    use super::Result;
+
+    // it sucks a lot that I can't
+    // impl<const S: usize, const B: usize, T, const BASE: usize> BaseCodec<String<S>, Vec<u8, B>> for T where
+    //     T: Base<BASE> + CodecCode
+
+    macro_rules! derive_smol_base_x {
+        ( $(#[$doc:meta] $code:literal => $base:literal:$type:ident, $encoding:expr;)* ) => {
+            $(
+                #[$doc]
+                #[derive(PartialEq, Eq, Clone, Copy, Debug)]
+                pub(crate) struct $type;
+
+                impl Base<$base> for $type {
+                    const ALPHABET: [u8; $base] = $encoding;
+                }
+
+                impl CodecCode for $type {
+                    const CODE: char = $code;
+                }
+
+                impl<const S: usize, const B: usize> BaseCodec<String<S>, Vec<u8, B>> for $type {
+                    fn encode(input: impl AsRef<[u8]>) -> Result<String<S>> {
+                        let input = input.as_ref();
+                        let mut s = String::<S>::default();
+
+                        // SAFETY: trait Base should only contain ascii chars (otherwise would be a borken base implementation)
+                        unsafe {
+                            let vec = s.as_mut_vec();
+                            // resize is a safe operation
+                            let len = crate::base_x_encoded_size(Self::BASE, input.len());
+                            vec.resize(len, 0)
+                                .map_err(|_| Error::ContainerTooSmall)?;
+                            // skips first byte to leave room for multibase code
+                            $type::encode_mut(input, &mut vec[1..]).unwrap();
+                        }
+                        Ok(s)
+                    }
+
+                    fn decode(input: impl AsRef<str>) -> Result<Vec<u8, B>> {
+                        let input = input.as_ref();
+                        let mut buf = Vec::<u8, B>::default();
+                        let len = crate::base_x_decoded_size(Self::BASE, input.len());
+                        buf.resize(len, 0)
+                            .map_err(|_| Error::ContainerTooSmall)?;
+                        println!("{}", input);
+                        $type::decode_mut(input, &mut buf).unwrap();
+                        Ok(buf)
+                    }
+                }
+            )*
+        };
+    }
+
+    derive_smol_base_x! {
+        /// Base10 (alphabet: 0123456789).
+        '9' => 10:Base10S, *b"0123456789";
+        /// Base58 bitcoin (alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz).
+        'z' => 58:Base58BtcS, *b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+        /// Base58 flicker (alphabet: 123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ).
+        'Z' => 58:Base58FlickrS, *b"123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+    }
+}

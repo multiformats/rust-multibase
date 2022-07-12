@@ -1,9 +1,7 @@
 use crate::encoding;
 use crate::error::Result;
 
-pub use big::*;
-
-#[cfg(not(feature = "std"))]
+#[cfg(all(feature = "alloc", not(feature = "std")))]
 use alloc::{string::String, vec::Vec};
 
 macro_rules! derive_base_encoding {
@@ -68,24 +66,7 @@ pub(crate) trait BaseCodec<En, De>: CodecCode {
     fn decode(input: impl AsRef<str>) -> Result<De>;
 }
 
-/// Identity, 8-bit binary (encoder and decoder keeps data unmodified).
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
-pub(crate) struct Identity;
-
-impl CodecCode for Identity {
-    const CODE: char = '\x00';
-}
-
-impl BaseCodec<String, Vec<u8>> for Identity {
-    fn encode(input: impl AsRef<[u8]>) -> Result<String> {
-        String::from_utf8(input.as_ref().to_vec()).map_err(|_| crate::Error::InvalidBaseString)
-    }
-
-    fn decode(input: impl AsRef<str>) -> Result<Vec<u8>> {
-        Ok(input.as_ref().as_bytes().to_vec())
-    }
-}
-
+#[cfg(feature = "alloc")]
 derive_base_encoding! {
     /// Base2 (alphabet: 01).
     '0' => Base2, encoding::BASE2;
@@ -123,6 +104,7 @@ derive_base_encoding! {
     'U' => Base64UrlPad, encoding::BASE64URL_PAD;
 }
 
+#[cfg(feature = "alloc")]
 derive_base_x! {
     /// Base10 (alphabet: 0123456789).
     '9' => Base10, encoding::BASE10;
@@ -132,10 +114,27 @@ derive_base_x! {
     'z' => Base58Btc, encoding::BASE58_BITCOIN;
 }
 
-mod big {
-    use base_x;
-
+#[cfg(feature = "alloc")]
+pub(crate) mod alloc {
     use crate::encoding;
+
+    /// Identity, 8-bit binary (encoder and decoder keeps data unmodified).
+    #[derive(PartialEq, Eq, Clone, Copy, Debug)]
+    pub(crate) struct Identity;
+
+    impl CodecCode for Identity {
+        const CODE: char = '\x00';
+    }
+
+    impl BaseCodec<String, Vec<u8>> for Identity {
+        fn encode(input: impl AsRef<[u8]>) -> Result<String> {
+            String::from_utf8(input.as_ref().to_vec()).map_err(|_| crate::Error::InvalidBaseString)
+        }
+
+        fn decode(input: impl AsRef<str>) -> Result<Vec<u8>> {
+            Ok(input.as_ref().as_bytes().to_vec())
+        }
+    }
 
     use super::{BaseCodec, CodecCode, Result};
     /// Base36, [0-9a-z] no padding (alphabet: abcdefghijklmnopqrstuvwxyz0123456789).
@@ -235,7 +234,6 @@ pub mod smol {
                         let len = crate::base_x_decoded_size(Self::BASE, input.len());
                         buf.resize(len, 0)
                             .map_err(|_| Error::ContainerTooSmall)?;
-                        println!("{}", input);
                         $type::decode_mut(input, &mut buf).unwrap();
                         Ok(buf)
                     }

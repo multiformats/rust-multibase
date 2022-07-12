@@ -1,11 +1,13 @@
 use core::convert::TryFrom;
-use core::fmt;
 
 use crate::error::{Error, Result};
 use crate::impls::*;
 
 #[cfg(all(feature = "alloc", not(feature = "std")))]
 use alloc::{string::String, vec::Vec};
+
+#[cfg(feature = "alloc")]
+use crate::impls::alloc::*;
 
 #[cfg(feature = "alloc")]
 macro_rules! build_base_enum {

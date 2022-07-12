@@ -5,10 +5,10 @@
 #![deny(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(not(feature = "std"))]
+#[cfg(all(feature = "alloc", not(feature = "std")))]
 extern crate alloc;
 
-#[cfg(not(feature = "std"))]
+#[cfg(all(feature = "alloc", not(feature = "std")))]
 use alloc::{string::String, vec::Vec};
 
 mod base;
@@ -16,9 +16,13 @@ mod encoding;
 mod error;
 mod impls;
 
-pub use self::base::{Base, StackBase};
+#[cfg(feature = "alloc")]
+pub use self::base::Base;
+
+pub use self::base::StackBase;
 pub use self::error::{Error, Result};
 
+#[cfg(feature = "alloc")]
 /// Decode the base string.
 ///
 /// # Examples
@@ -39,6 +43,7 @@ pub fn decode<T: AsRef<str>>(input: T) -> Result<(Base, Vec<u8>)> {
     Ok((base, decoded))
 }
 
+#[cfg(feature = "alloc")]
 /// Encode with the given byte slice to base string.
 ///
 /// # Examples

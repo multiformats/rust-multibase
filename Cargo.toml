@@ -12,8 +12,8 @@ keywords = ["ipld", "ipfs", "multihash", "cid", "no_std"]
 
 [features]
 default = ["std"]
-std = ["data-encoding/std", "base-x", "alloc"]
-alloc = []
+std = ["data-encoding/std", "alloc"]
+alloc = ["base-x"]
 unstable = ["smol-base-x/unstable"]
 
 [dependencies]

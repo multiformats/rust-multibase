@@ -15,6 +15,7 @@ macro_rules! derive_base_encoding {
                 const CODE: char = $code;
             }
 
+            #[cfg(feature = "alloc")]
             impl BaseCodec<String, Vec<u8>> for $type {
                 fn encode(input: impl AsRef<[u8]>) -> Result<String> {
                     Ok($encoding.encode(input.as_ref()))
@@ -96,7 +97,6 @@ pub(crate) trait BaseCodec<En, De>: CodecCode {
     fn decode(input: impl AsRef<str>) -> Result<De>;
 }
 
-#[cfg(feature = "alloc")]
 derive_base_encoding! {
     /// Base2 (alphabet: 01).
     '0' => Base2, encoding::BASE2;

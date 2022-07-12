@@ -21,6 +21,7 @@ pub use self::base::Base;
 
 pub use self::base::StackBase;
 pub use self::error::{Error, Result};
+pub use heapless::{Vec as StackVec, String as StackString};
 
 #[cfg(feature = "alloc")]
 /// Decode the base string.
@@ -72,7 +73,7 @@ pub fn encode<T: AsRef<[u8]>>(base: Base, input: T) -> String {
 pub fn encode_arr<const S: usize>(
     base: StackBase<0, S>,
     input: &[u8],
-) -> Result<heapless::String<S>> {
+) -> Result<StackString<S>> {
     let mut out = base.encode(input)?;
     // encode() leaves an open byte in the begining (for stack implementations)
     // SAFETY: this trusts that and all (implemented) multibase codes are ascii
@@ -89,7 +90,7 @@ pub fn encode_arr<const S: usize>(
 ///
 /// assert_eq!(decode_arr::<32>("zCn8eVZg").unwrap().1.as_slice(), "hello".as_bytes());
 /// ```
-pub fn decode_arr<const S: usize>(input: &str) -> Result<(StackBase<S, 0>, heapless::Vec<u8, S>)> {
+pub fn decode_arr<const S: usize>(input: &str) -> Result<(StackBase<S, 0>, StackVec<u8, S>)> {
     let code = input.chars().next().ok_or(Error::InvalidBaseString)?;
     let base = StackBase::from_code(code)?;
     let decoded = base.decode(&input[code.len_utf8()..])?;

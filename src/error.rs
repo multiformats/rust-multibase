@@ -10,6 +10,8 @@ pub enum Error {
     UnknownBase(char),
     /// Invalid string.
     InvalidBaseString,
+    /// Container being written into is too small.
+    ContainerTooSmall,
 }
 
 impl fmt::Display for Error {
@@ -17,6 +19,7 @@ impl fmt::Display for Error {
         match self {
             Error::UnknownBase(code) => write!(f, "Unknown base code: {}", code),
             Error::InvalidBaseString => write!(f, "Invalid base string"),
+            Error::ContainerTooSmall => write!(f, "Output container too small"),
         }
     }
 }
@@ -24,6 +27,7 @@ impl fmt::Display for Error {
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
+#[cfg(feature = "alloc")]
 impl From<base_x::DecodeError> for Error {
     fn from(_: base_x::DecodeError) -> Self {
         Self::InvalidBaseString

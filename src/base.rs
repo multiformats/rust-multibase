@@ -166,6 +166,40 @@ build_base_const_enum! {
     Base58FlickrS,
     /// Base58 bitcoin (alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz).
     Base58BtcS,
+    /// Base2 (alphabet: 01).
+    Base2,
+    /// Base8 (alphabet: 01234567).
+    Base8, 
+    /// Base16 lower hexadecimal (alphabet: 0123456789abcdef).
+    Base16Lower, 
+    /// Base16 upper hexadecimal (alphabet: 0123456789ABCDEF).
+    Base16Upper, 
+    /// Base32, rfc4648 no padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
+    Base32Lower, 
+    /// Base32, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
+    Base32Upper, 
+    /// Base32, rfc4648 with padding (alphabet: abcdefghijklmnopqrstuvwxyz234567).
+    Base32PadLower, 
+    /// Base32, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZ234567).
+    Base32PadUpper, 
+    /// Base32hex, rfc4648 no padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
+    Base32HexLower, 
+    /// Base32hex, rfc4648 no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
+    Base32HexUpper, 
+    /// Base32hex, rfc4648 with padding (alphabet: 0123456789abcdefghijklmnopqrstuv).
+    Base32HexPadLower, 
+    /// Base32hex, rfc4648 with padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUV).
+    Base32HexPadUpper, 
+    /// z-base-32 (used by Tahoe-LAFS) (alphabet: ybndrfg8ejkmcpqxot1uwisza345h769).
+    Base32Z, 
+    /// Base64, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
+    Base64, 
+    /// Base64, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/).
+    Base64Pad, 
+    /// Base64 url, rfc4648 no padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
+    Base64Url, 
+    /// Base64 url, rfc4648 with padding (alphabet: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_).
+    Base64UrlPad,
 }
 
 #[cfg(feature = "alloc")]

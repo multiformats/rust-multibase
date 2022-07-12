@@ -1,4 +1,4 @@
-use crate::encoding;
+use crate::{encoding, Error};
 use crate::error::Result;
 
 #[cfg(all(feature = "alloc", not(feature = "std")))]
@@ -22,6 +22,36 @@ macro_rules! derive_base_encoding {
 
                 fn decode(input: impl AsRef<str>) -> Result<Vec<u8>> {
                     Ok($encoding.decode(input.as_ref().as_bytes())?)
+                }
+            }
+
+            impl<const S: usize, const B: usize> BaseCodec<heapless::String<S>, heapless::Vec<u8, B>> for $type {
+                fn encode(input: impl AsRef<[u8]>) -> Result<heapless::String<S>> {
+                    let input = input.as_ref();
+                    let mut s = heapless::String::<S>::default();
+            
+                    // SAFETY: trait Base should only contain ascii chars (otherwise would be a borken base implementation)
+                    unsafe {
+                        let vec = s.as_mut_vec();
+                        // resize is a safe operation
+                        let len = $encoding.encode_len(input.len());
+            
+                        vec.resize(len, 0)
+                            .map_err(|_| Error::ContainerTooSmall)?;
+                        // skips first byte to leave room for multibase code
+                        $encoding.encode_mut(input, &mut vec[1..]);
+                    }
+                    Ok(s)
+                }
+            
+                fn decode(input: impl AsRef<str>) -> Result<heapless::Vec<u8, B>> {
+                    let input = input.as_ref();
+                    let mut buf = heapless::Vec::<u8, B>::default();
+                    let len = $encoding.decode_len(input.len())?;
+                    buf.resize(len, 0)
+                        .map_err(|_| Error::ContainerTooSmall)?;
+                    $encoding.decode_mut(input.as_bytes(), &mut buf).unwrap();
+                    Ok(buf)
                 }
             }
 

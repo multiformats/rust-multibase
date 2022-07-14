@@ -16,6 +16,7 @@ std = ["data-encoding/std"]
 
 [dependencies]
 base-x = { version = "0.2.7", default-features = false }
+base256emoji = "1.0.2"
 data-encoding = { version = "2.3.1", default-features = false, features = ["alloc"] }
 data-encoding-macro = "0.1.9"
 

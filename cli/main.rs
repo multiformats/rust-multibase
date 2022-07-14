@@ -69,6 +69,7 @@ impl fmt::Display for StrBase {
             Base::Base64Pad => "base64pad",
             Base::Base64Url => "base64url",
             Base::Base64UrlPad => "base64urlpad",
+            Base::Base256Emoji => "base256emoji",
         };
         write!(f, "{}", base_str)
     }
@@ -102,6 +103,7 @@ impl FromStr for StrBase {
             "base64pad" => Ok(Base::Base64Pad),
             "base64url" => Ok(Base::Base64Url),
             "base64urlpad" => Ok(Base::Base64UrlPad),
+            "base256emoji" => Ok(Base::Base256Emoji),
             _ => return Err(anyhow!("Unknown base: {:?}", base_str)),
         };
         base.map(Self)

@@ -14,39 +14,31 @@ jobs:
 
     steps:
       - name: Checkout Sources
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v3
 
       - name: Cache Dependencies & Build Outputs
-        uses: actions/cache@v3.3.1
+        uses: actions/cache@v3
         with:
           path: ~/.cargo
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install Rust Toolchain
-        uses: actions-rs/toolchain@v1.0.7
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
           toolchain: ${{ matrix.toolchain }}
-          override: true
           components: rustfmt, clippy
 
       - name: Check Code Format
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt --all -- --check
+        shell: bash
 
       - name: Code Lint
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: clippy
-          args: --all-targets --all-features --workspace -- -D warnings
+        run: cargo clippy --all-targets --all-features --workspace -- -D warnings
+        shell: bash
 
       - name: Test
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: test
-          args: --all-features --workspace
+        run: cargo test --all-features --workspace
+        shell: bash
 
   ensure_no_std:
     name: Ensure no_std
@@ -54,40 +46,32 @@ jobs:
 
     steps:
       - name: Checkout Sources
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v3
 
       - name: Install Rust Toolchain
-        uses: actions-rs/toolchain@v1.0.7
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          target: thumbv6m-none-eabi
+          targets: thumbv6m-none-eabi
 
       - name: Build
-        uses: actions-rs/cargo@v1.0.3
-        with:
-          command: build
-          args: --no-default-features --target thumbv6m-none-eabi
+        run: cargo build --no-default-features --target thumbv6m-none-eabi
+        shell: bash
 
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Sources
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v3
 
       - name: Install Rust Toolchain
-        uses: actions-rs/toolchain@v1.0.7
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Generate Code Coverage
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          args: --all-features
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --all-features --out Xml
+        shell: bash
 
       - name: Upload Code Coverage
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3

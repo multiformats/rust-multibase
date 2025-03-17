@@ -4,8 +4,8 @@ use rand::Rng;
 use multibase::{decode, encode, Base};
 
 fn bench_encode(c: &mut Criterion) {
-    let mut rng = rand::thread_rng();
-    let data: Vec<u8> = (0..1024).map(|_| rng.gen()).collect();
+    let mut rng = rand::rng();
+    let data: Vec<u8> = (0..1024).map(|_| rng.random()).collect();
 
     let mut group = c.benchmark_group("encode");
     group.bench_function("base32", |b| {
@@ -27,8 +27,8 @@ fn bench_encode(c: &mut Criterion) {
 }
 
 fn bench_decode(c: &mut Criterion) {
-    let mut rng = rand::thread_rng();
-    let data: Vec<usize> = (0..1024).map(|_| rng.gen()).collect();
+    let mut rng = rand::rng();
+    let data: Vec<usize> = (0..1024).map(|_| rng.random::<u32>() as usize).collect();
 
     let base32 = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     let base58 = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";

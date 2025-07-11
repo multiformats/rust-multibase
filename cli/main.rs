@@ -1,4 +1,5 @@
 use std::fmt;
+use std::io::{self, Read, Write};
 use std::str::FromStr;
 
 use anyhow::{anyhow, Error, Result};
@@ -119,13 +120,13 @@ impl From<StrBase> for Base {
 fn encode(base: StrBase, input: &[u8]) -> Result<()> {
     log::debug!("Encode {:?} with {}", input, base);
     let result = multibase::encode(base.into(), input);
-    println!("Result: {}", result);
+    print!("{}", result);
     Ok(())
 }
 
 fn decode(input: &str) -> Result<()> {
     log::debug!("Decode {:?}", input);
-    let (base, result) = multibase::decode(input)?;
-    println!("Result: {}, {:?}", StrBase(base), result);
+    let (_, result) = multibase::decode(input)?;
+    io::stdout().write_all(&result)?;
     Ok(())
 }

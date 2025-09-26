@@ -1,4 +1,5 @@
 use std::fmt;
+use std::io::{self, Read, Write};
 use std::str::FromStr;
 
 use anyhow::{anyhow, Error, Result};
@@ -19,15 +20,15 @@ enum Mode {
         /// The base to use for encoding.
         #[structopt(short = "b", long = "base", default_value = "base58btc")]
         base: StrBase,
-        /// The data need to be encoded.
+        /// The data to encode. Reads from stdin if not provided.
         #[structopt(short = "i", long = "input")]
-        input: String,
+        input: Option<String>,
     },
     #[structopt(name = "decode")]
     Decode {
-        /// The data need to be decoded.
+        /// The data to decode. Reads from stdin if not provided.
         #[structopt(short = "i", long = "input")]
-        input: String,
+        input: Option<String>,
     },
 }
 
@@ -35,8 +36,28 @@ fn main() -> Result<()> {
     env_logger::init();
     let opts = Opts::from_args();
     match opts.mode {
-        Mode::Encode { base, input } => encode(base, input.as_bytes()),
-        Mode::Decode { input } => decode(&input),
+        Mode::Encode { base, input } => {
+            let input_bytes = match input {
+                Some(s) => s.into_bytes(),
+                None => {
+                    let mut buf = Vec::new();
+                    io::stdin().read_to_end(&mut buf)?;
+                    buf
+                }
+            };
+            encode(base, &input_bytes)
+        }
+        Mode::Decode { input } => {
+            let input_str = match input {
+                Some(s) => s,
+                None => {
+                    let mut buf = String::new();
+                    io::stdin().read_to_string(&mut buf)?;
+                    buf
+                }
+            };
+            decode(&input_str)
+        }
     }
 }
 
@@ -119,13 +140,13 @@ impl From<StrBase> for Base {
 fn encode(base: StrBase, input: &[u8]) -> Result<()> {
     log::debug!("Encode {:?} with {}", input, base);
     let result = multibase::encode(base.into(), input);
-    println!("Result: {}", result);
+    print!("{}", result);
     Ok(())
 }
 
 fn decode(input: &str) -> Result<()> {
     log::debug!("Decode {:?}", input);
-    let (base, result) = multibase::decode(input)?;
-    println!("Result: {}, {:?}", StrBase(base), result);
+    let (_, result) = multibase::decode(input)?;
+    io::stdout().write_all(&result)?;
     Ok(())
 }

@@ -158,3 +158,16 @@ impl BaseCodec for Base36Upper {
         Ok(base_x::decode(encoding::BASE36_UPPER, &uppercased)?)
     }
 }
+
+/// Base45, rfc9285 (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:).
+pub(crate) struct Base45;
+
+impl BaseCodec for Base45 {
+    fn encode<I: AsRef<[u8]>>(input: I) -> String {
+        base45::encode(input.as_ref())
+    }
+
+    fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
+        Ok(base45::decode(input.as_ref())?)
+    }
+}

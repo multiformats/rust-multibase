@@ -82,6 +82,8 @@ build_base_enum! {
     'k' => Base36Lower,
     /// Base36, [0-9A-Z] no padding (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ).
     'K' => Base36Upper,
+    /// Base45, rfc9285 (alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:).
+    'R' => Base45,
     /// Base58 flicker (alphabet: 123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ).
     'Z' => Base58Flickr,
     /// Base58 bitcoin (alphabet: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz).

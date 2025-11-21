@@ -58,6 +58,7 @@ fn test_basic() {
         (Base32Z, "hxf1zgedpcfzg1ebb"),
         (Base36Lower, "k2lcpzo5yikidynfl"),
         (Base36Upper, "K2LCPZO5YIKIDYNFL"),
+        (Base45, "RRFF.OEB$D5/DZ24"),
         (Base58Flickr, "Z7Pznk19XTTzBtx"),
         (Base58Btc, "z7paNL19xttacUY"),
         (Base64, "meWVzIG1hbmkgIQ"),

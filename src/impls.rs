@@ -168,6 +168,7 @@ impl BaseCodec for Base45 {
     }
 
     fn decode<I: AsRef<str>>(input: I) -> Result<Vec<u8>> {
-        Ok(base45::decode(input.as_ref())?)
+        let uppercased = input.as_ref().to_ascii_uppercase();
+        Ok(base45::decode(&uppercased)?)
     }
 }

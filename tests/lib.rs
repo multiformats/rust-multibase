@@ -91,6 +91,7 @@ fn preserves_leading_zero() {
         (Base32Z, "hybhskh3ypiosh4jyrr"),
         (Base36Lower, "k02lcpzo5yikidynfl"),
         (Base36Upper, "K02LCPZO5YIKIDYNFL"),
+        (Base45, "RV206$CL44CEC2DDX0"),
         (Base58Flickr, "Z17Pznk19XTTzBtx"),
         (Base58Btc, "z17paNL19xttacUY"),
         (Base64, "mAHllcyBtYW5pICE"),
@@ -123,6 +124,7 @@ fn preserves_two_leading_zeroes() {
         (Base32Z, "hyyy813murbssn5ujryoo"),
         (Base36Lower, "k002lcpzo5yikidynfl"),
         (Base36Upper, "K002LCPZO5YIKIDYNFL"),
+        (Base45, "R000RFF.OEB$D5/DZ24"),
         (Base58Flickr, "Z117Pznk19XTTzBtx"),
         (Base58Btc, "z117paNL19xttacUY"),
         (Base64, "mAAB5ZXMgbWFuaSAh"),
@@ -150,6 +152,7 @@ fn case_insensitivity() {
         (Base32HexPadUpper, "Td1imor3f41RMUSJCCG======"),
         (Base36Lower, "kfUvrsIvVnfRbjWaJo"),
         (Base36Upper, "KfUVrSIVVnFRbJWAJo"),
+        (Base45, "R+8d vd82ek4f.kea2"),
     ];
     for (base, output) in test_cases {
         assert_eq!(decode(output).unwrap(), (base, input.to_vec()));

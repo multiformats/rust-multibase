@@ -22,7 +22,7 @@ data-encoding-macro = "0.1.9"
 base45 = { version = "3.2.0", default-features = false }
 
 [dev-dependencies]
-criterion = "0.7"
+criterion = "0.8"
 rand = "0.9"
 
 [[bench]]

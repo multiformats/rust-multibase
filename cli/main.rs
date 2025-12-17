@@ -3,38 +3,38 @@ use std::io::{self, Read, Write};
 use std::str::FromStr;
 
 use anyhow::{anyhow, Error, Result};
+use clap::{Parser, Subcommand};
 use multibase::Base;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 struct Opts {
     /// The mode
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     mode: Mode,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Subcommand, Debug)]
 enum Mode {
-    #[structopt(name = "encode")]
+    #[command(name = "encode")]
     Encode {
         /// The base to use for encoding.
-        #[structopt(short = "b", long = "base", default_value = "base58btc")]
+        #[arg(short = 'b', long = "base", default_value = "base58btc")]
         base: StrBase,
         /// The data to encode. Reads from stdin if not provided.
-        #[structopt(short = "i", long = "input")]
+        #[arg(short = 'i', long = "input")]
         input: Option<String>,
     },
-    #[structopt(name = "decode")]
+    #[command(name = "decode")]
     Decode {
         /// The data to decode. Reads from stdin if not provided.
-        #[structopt(short = "i", long = "input")]
+        #[arg(short = 'i', long = "input")]
         input: Option<String>,
     },
 }
 
 fn main() -> Result<()> {
     env_logger::init();
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     match opts.mode {
         Mode::Encode { base, input } => {
             let input_bytes = match input {
@@ -61,7 +61,7 @@ fn main() -> Result<()> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct StrBase(Base);
 
 impl fmt::Display for StrBase {

@@ -41,3 +41,9 @@ impl From<data_encoding::DecodeError> for Error {
         Self::InvalidBaseString
     }
 }
+
+impl From<base45::DecodeError> for Error {
+    fn from(_: base45::DecodeError) -> Self {
+        Self::InvalidBaseString
+    }
+}

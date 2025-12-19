@@ -14,9 +14,7 @@ updates:
       minor-and-patch-updates:
         patterns:
           - "*"
-        update_types:
-          - "minor"
-          - "patch"
+        update-types: ["minor", "patch"]
     versioning-strategy: lockfile-only
     ignore:
       - dependency-name: "*"

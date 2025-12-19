@@ -1,12 +1,34 @@
 version: 2
 updates:
+  # `version-strategy` is not supported on a group level, hence we need two
+  # separate rules for breaking and non-breaking changes.
+  # Non breaking changes will be grouped in a single PR and only their
+  # lock-files will be updated. This way we can see on the CI if any minor
+  # update accidentally broke our code.
+  # Breaking changes will create individual PRs.
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      minor-and-patch-updates:
+        patterns:
+          - "*"
+        update_types:
+          - "minor"
+          - "patch"
+    versioning-strategy: lockfile-only
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    versioning-strategy: auto
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
 
   - package-ecosystem: "github-actions"
     directory: "/"

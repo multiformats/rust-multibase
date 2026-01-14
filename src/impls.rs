@@ -1,5 +1,6 @@
 use crate::encoding;
 use crate::error::Result;
+#[cfg(feature = "base_emoji")]
 use base256emoji::{Base, Emoji};
 
 #[cfg(not(feature = "std"))]
@@ -67,10 +68,12 @@ impl BaseCodec for Identity {
     }
 }
 
+#[cfg(feature = "base_emoji")]
 /// Base256Emoji (alphabet: 🚀🪐☄🛰🌌🌑🌒🌓🌔🌕🌖🌗🌘🌍🌏🌎🐉☀💻🖥💾💿😂❤😍🤣😊🙏💕😭😘👍😅👏😁🔥🥰💔💖💙😢🤔😆🙄💪😉☺👌🤗💜😔😎😇🌹🤦🎉💞✌✨🤷😱😌🌸🙌😋💗💚😏💛🙂💓🤩😄😀🖤😃💯🙈👇🎶😒🤭❣😜💋👀😪😑💥🙋😞😩😡🤪👊🥳😥🤤👉💃😳✋😚😝😴🌟😬🙃🍀🌷😻😓⭐✅🥺🌈😈🤘💦✔😣🏃💐☹🎊💘😠☝😕🌺🎂🌻😐🖕💝🙊😹🗣💫💀👑🎵🤞😛🔴😤🌼😫⚽🤙☕🏆🤫👈😮🙆🍻🍃🐶💁😲🌿🧡🎁⚡🌞🎈❌✊👋😰🤨😶🤝🚶💰🍓💢🤟🙁🚨💨🤬✈🎀🍺🤓😙💟🌱😖👶🥴▶➡❓💎💸⬇😨🌚🦋😷🕺⚠🙅😟😵👎🤲🤠🤧📌🔵💅🧐🐾🍒😗🤑🌊🤯🐷☎💧😯💆👆🎤🙇🍑❄🌴💣🐸💌📍🥀🤢👅💡💩👐📸👻🤐🤮🎼🥵🚩🍎🍊👼💍📣🥂)
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub(crate) struct Base256Emoji;
 
+#[cfg(feature = "base_emoji")]
 impl BaseCodec for Base256Emoji {
     fn encode<I: AsRef<[u8]>>(input: I) -> String {
         Emoji::encode(input.as_ref())

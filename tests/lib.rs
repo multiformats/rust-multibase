@@ -65,6 +65,7 @@ fn test_basic() {
         (Base64Pad, "MeWVzIG1hbmkgIQ=="),
         (Base64Url, "ueWVzIG1hbmkgIQ"),
         (Base64UrlPad, "UeWVzIG1hbmkgIQ=="),
+        #[cfg(feature = "base_emoji")]
         (Base256Emoji, "🚀🏃✋🌈😅🌷🤤😻🌟😅👏"),
     ];
     encode_decode_assert(input, test_cases);
@@ -98,6 +99,7 @@ fn preserves_leading_zero() {
         (Base64Pad, "MAHllcyBtYW5pICE="),
         (Base64Url, "uAHllcyBtYW5pICE"),
         (Base64UrlPad, "UAHllcyBtYW5pICE="),
+        #[cfg(feature = "base_emoji")]
         (Base256Emoji, "🚀🚀🏃✋🌈😅🌷🤤😻🌟😅👏"),
     ];
     encode_decode_assert(input, test_cases);
@@ -131,6 +133,7 @@ fn preserves_two_leading_zeroes() {
         (Base64Pad, "MAAB5ZXMgbWFuaSAh"),
         (Base64Url, "uAAB5ZXMgbWFuaSAh"),
         (Base64UrlPad, "UAAB5ZXMgbWFuaSAh"),
+        #[cfg(feature = "base_emoji")]
         (Base256Emoji, "🚀🚀🚀🏃✋🌈😅🌷🤤😻🌟😅👏"),
     ];
     encode_decode_assert(input, test_cases);

@@ -30,6 +30,7 @@ impl From<base_x::DecodeError> for Error {
     }
 }
 
+#[cfg(feature = "base_emoji")]
 impl From<base256emoji::DecodeError> for Error {
     fn from(_: base256emoji::DecodeError) -> Self {
         Self::InvalidBaseString

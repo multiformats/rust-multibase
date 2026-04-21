@@ -1,7 +1,7 @@
 use std::hint::black_box;
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use rand::Rng;
+use rand::RngExt;
 
 use multibase::{decode, encode, Base};
 
